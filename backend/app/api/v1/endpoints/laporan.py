@@ -9,7 +9,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import require_role
+from app.dependencies.auth import require_role, require_feature
 from app.models.armada import Armada
 from app.models.user import UserRole
 
@@ -47,7 +47,7 @@ def _rows(armada_list: list[Armada]) -> list[list[str]]:
     ]
 
 
-@router.get("/export")
+@router.get("/export", dependencies=[Depends(require_feature("export_laporan"))])
 def export_laporan(
     format: str = Query("excel", pattern="^(excel|pdf)$"),
     jenis_id: int | None = None,

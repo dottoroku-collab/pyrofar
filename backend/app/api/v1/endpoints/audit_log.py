@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import require_role
+from app.dependencies.auth import require_role, require_feature
 from app.models.audit_log import AuditLog
 from app.models.user import UserRole
 from app.schemas.audit_log import AuditLogPublic
@@ -12,7 +12,7 @@ from app.schemas.audit_log import AuditLogPublic
 router = APIRouter(prefix="/audit-log", tags=["Audit Log"])
 
 
-@router.get("", response_model=list[AuditLogPublic])
+@router.get("", response_model=list[AuditLogPublic], dependencies=[Depends(require_feature("audit_log"))])
 def list_audit_log(
     user_id: int | None = None,
     entitas: str | None = None,

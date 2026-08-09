@@ -7,7 +7,8 @@ from app.dependencies.auth import require_role
 from app.models.audit_log import AuditAksi
 from app.models.user import User, UserRole
 from app.schemas.user import UserAdminPublic, UserCreate, UserUpdate
-from app.services import audit_service
+
+from app.services import audit_service, license_service
 
 router = APIRouter(prefix="/users", tags=["Pengguna"])
 
@@ -24,30 +25,76 @@ def list_users(
     return query.order_by(User.nama).all()
 
 
-@router.post("", response_model=UserAdminPublic, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=UserAdminPublic,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_user(
     payload: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator])),
+    current_user: User = Depends(
+        require_role([UserRole.administrator])
+    ),
 ):
-    exists = db.query(User).filter(User.email == payload.email, User.is_deleted.is_(False)).first()
-    if exists:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email sudah terdaftar")
+    # Cek jumlah user aktif sebelum membuat user baru
+    current_count = (
+        db.query(User)
+        .filter(User.is_deleted.is_(False))
+        .count()
+    )
 
+    if not license_service.check_limit(
+        db,
+        "users",
+        current_count,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Batas jumlah pengguna pada lisensi Anda telah tercapai",
+        )
+
+    # Cek email
+    exists = (
+        db.query(User)
+        .filter(
+            User.email == payload.email,
+            User.is_deleted.is_(False),
+        )
+        .first()
+    )
+
+    if exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email sudah terdaftar",
+        )
+
+    # Buat user
     user = User(
         nama=payload.nama,
         email=payload.email,
         password_hash=hash_password(payload.password),
         role=payload.role,
     )
+
     db.add(user)
     db.commit()
     db.refresh(user)
 
+    # Audit
     audit_service.catat(
-        db, current_user.id, AuditAksi.tambah, "users", user.id,
-        nilai_sesudah={"email": user.email, "role": user.role.value},
+        db,
+        current_user.id,
+        AuditAksi.tambah,
+        "users",
+        user.id,
+        nilai_sesudah={
+            "email": user.email,
+            "role": user.role.value,
+        },
     )
+
     return user
 
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import require_role
+from app.dependencies.auth import require_role, require_feature
 from app.models.user import User, UserRole
 from app.schemas.status import HistoriStatusPublic, RejectRequest
 from app.services import approval_service
@@ -10,7 +10,7 @@ from app.services import approval_service
 router = APIRouter(prefix="/approval", tags=["Approval"])
 
 
-@router.get("", response_model=list[HistoriStatusPublic])
+@router.get("", response_model=list[HistoriStatusPublic], dependencies=[Depends(require_feature("approval"))])
 def list_pending(
     db: Session = Depends(get_db),
     _current_user: User = Depends(require_role([UserRole.kabid])),
@@ -18,7 +18,7 @@ def list_pending(
     return approval_service.list_pending(db)
 
 
-@router.post("/{histori_status_id}/approve", response_model=HistoriStatusPublic)
+@router.post("/{histori_status_id}/approve", response_model=HistoriStatusPublic, dependencies=[Depends(require_feature("approval"))])
 def approve(
     histori_status_id: int,
     db: Session = Depends(get_db),
@@ -27,7 +27,7 @@ def approve(
     return approval_service.approve(db, histori_status_id, current_user)
 
 
-@router.post("/{histori_status_id}/reject", response_model=HistoriStatusPublic)
+@router.post("/{histori_status_id}/reject", response_model=HistoriStatusPublic, dependencies=[Depends(require_feature("approval"))])
 def reject(
     histori_status_id: int,
     payload: RejectRequest,

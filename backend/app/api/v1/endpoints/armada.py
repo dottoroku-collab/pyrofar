@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user, require_role
+from app.dependencies.auth import get_current_user, require_role, require_feature
 from app.models.armada import Armada
 from app.models.armada_file import ArmadaFile, JenisFileArmada
 from app.models.histori_lokasi import HistoriLokasi
@@ -13,7 +13,7 @@ from app.schemas.armada_file import ArmadaFilePublic
 from app.schemas.lokasi_history import HistoriLokasiPublic, PindahLokasiRequest
 from app.schemas.status import HistoriStatusPublic, UbahStatusRequest
 from app.schemas.timeline import TimelineItem
-from app.services import approval_service, armada_service as svc, lokasi_service, reminder_service, timeline_service
+from app.services import approval_service, armada_service as svc, lokasi_service, reminder_service, timeline_service, license_service
 from app.utils.file_storage import save_upload
 
 router = APIRouter(prefix="/armada", tags=["Data Armada"])
@@ -26,7 +26,7 @@ def _get_or_404(db: Session, armada_id: int) -> Armada:
     return armada
 
 
-@router.get("", response_model=list[ArmadaListItem])
+@router.get("", response_model=list[ArmadaListItem], dependencies=[Depends(require_feature("armada"))])
 def list_armada(
     q: str | None = Query(None, description="Cari kode armada / no. polisi / no. lambung"),
     jenis_id: int | None = None,
@@ -63,23 +63,37 @@ def list_armada(
     )
 
 
-@router.post("", response_model=ArmadaPublic, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ArmadaPublic, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_feature("armada"))])
 def create_armada(
     payload: ArmadaCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator, UserRole.operator])),
+    current_user: User = Depends(
+        require_role([UserRole.administrator, UserRole.operator])
+    ),
 ):
+    current_count = (
+        db.query(Armada)
+        .filter(Armada.is_deleted.is_(False))
+        .count()
+    )
+
+    if not license_service.check_limit(db, "armada", current_count):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Batas jumlah armada pada lisensi Anda telah tercapai",
+        )
+
     armada = svc.create_armada(db, payload, current_user)
     reminder_service.sinkronkan_jadwal_stnk(db, armada)
     return armada
 
 
-@router.get("/{armada_id}", response_model=ArmadaPublic)
+@router.get("/{armada_id}", response_model=ArmadaPublic, dependencies=[Depends(require_feature("armada"))])
 def get_armada(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     return _get_or_404(db, armada_id)
 
 
-@router.put("/{armada_id}", response_model=ArmadaPublic)
+@router.put("/{armada_id}", response_model=ArmadaPublic, dependencies=[Depends(require_feature("armada"))])
 def update_armada(
     armada_id: int,
     payload: ArmadaUpdate,
@@ -92,13 +106,13 @@ def update_armada(
     return updated
 
 
-@router.get("/{armada_id}/timeline", response_model=list[TimelineItem])
+@router.get("/{armada_id}/timeline", response_model=list[TimelineItem], dependencies=[Depends(require_feature("armada"))])
 def get_timeline(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     _get_or_404(db, armada_id)
     return timeline_service.get_timeline(db, armada_id)
 
 
-@router.delete("/{armada_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{armada_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_feature("armada"))])
 def delete_armada(
     armada_id: int,
     db: Session = Depends(get_db),
@@ -108,13 +122,13 @@ def delete_armada(
     svc.soft_delete_armada(db, armada, current_user)
 
 
-@router.get("/{armada_id}/files", response_model=list[ArmadaFilePublic])
+@router.get("/{armada_id}/files", response_model=list[ArmadaFilePublic], dependencies=[Depends(require_feature("armada"))])
 def list_files(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     _get_or_404(db, armada_id)
     return db.query(ArmadaFile).filter(ArmadaFile.armada_id == armada_id).all()
 
 
-@router.post("/{armada_id}/files", response_model=ArmadaFilePublic, status_code=status.HTTP_201_CREATED)
+@router.post("/{armada_id}/files", response_model=ArmadaFilePublic, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_feature("armada"))])
 def upload_file(
     armada_id: int,
     jenis_file: JenisFileArmada,
@@ -133,7 +147,7 @@ def upload_file(
     return armada_file
 
 
-@router.delete("/{armada_id}/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{armada_id}/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_feature("armada"))])
 def delete_file(
     armada_id: int,
     file_id: int,
@@ -151,7 +165,7 @@ def delete_file(
     db.commit()
 
 
-@router.post("/{armada_id}/pindah-lokasi", response_model=HistoriLokasiPublic, status_code=status.HTTP_201_CREATED)
+@router.post("/{armada_id}/pindah-lokasi", response_model=HistoriLokasiPublic, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_feature("armada"))])
 def pindah_lokasi(
     armada_id: int,
     payload: PindahLokasiRequest,
@@ -162,7 +176,7 @@ def pindah_lokasi(
     return lokasi_service.pindah_lokasi(db, armada, payload, current_user)
 
 
-@router.get("/{armada_id}/histori-lokasi", response_model=list[HistoriLokasiPublic])
+@router.get("/{armada_id}/histori-lokasi", response_model=list[HistoriLokasiPublic], dependencies=[Depends(require_feature("armada"))])
 def histori_lokasi(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     _get_or_404(db, armada_id)
     return (
@@ -173,7 +187,7 @@ def histori_lokasi(armada_id: int, db: Session = Depends(get_db), _=Depends(get_
     )
 
 
-@router.put("/{armada_id}/status", response_model=HistoriStatusPublic)
+@router.put("/{armada_id}/status", response_model=HistoriStatusPublic, dependencies=[Depends(require_feature("armada"))])
 def ubah_status(
     armada_id: int,
     payload: UbahStatusRequest,

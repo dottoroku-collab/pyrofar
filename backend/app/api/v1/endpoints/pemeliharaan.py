@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user, require_role
+from app.dependencies.auth import get_current_user, require_role, require_feature
 from app.models.pemeliharaan import Pemeliharaan
 from app.models.sparepart import Sparepart
 from app.models.user import User, UserRole
@@ -30,7 +30,7 @@ def _get_or_404(db: Session, pemeliharaan_id: int) -> Pemeliharaan:
     return item
 
 
-@router.get("", response_model=list[PemeliharaanPublic])
+@router.get("", response_model=list[PemeliharaanPublic], dependencies=[Depends(require_feature("pemeliharaan"))])
 def list_pemeliharaan(
     armada_id: int | None = None,
     status_filter: str | None = None,
@@ -45,7 +45,7 @@ def list_pemeliharaan(
     return query.order_by(Pemeliharaan.tanggal.desc()).all()
 
 
-@router.post("", response_model=PemeliharaanPublic, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PemeliharaanPublic, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_feature("pemeliharaan"))])
 def create_pemeliharaan(
     payload: PemeliharaanCreate,
     db: Session = Depends(get_db),
@@ -54,12 +54,12 @@ def create_pemeliharaan(
     return svc.create_pemeliharaan(db, payload, current_user)
 
 
-@router.get("/{pemeliharaan_id}", response_model=PemeliharaanPublic)
+@router.get("/{pemeliharaan_id}", response_model=PemeliharaanPublic, dependencies=[Depends(require_feature("pemeliharaan"))])
 def get_pemeliharaan(pemeliharaan_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     return _get_or_404(db, pemeliharaan_id)
 
 
-@router.put("/{pemeliharaan_id}", response_model=PemeliharaanPublic)
+@router.put("/{pemeliharaan_id}", response_model=PemeliharaanPublic, dependencies=[Depends(require_feature("pemeliharaan"))])
 def update_pemeliharaan(
     pemeliharaan_id: int,
     payload: PemeliharaanUpdate,
@@ -70,7 +70,7 @@ def update_pemeliharaan(
     return svc.update_pemeliharaan(db, item, payload)
 
 
-@router.delete("/{pemeliharaan_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{pemeliharaan_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_feature("pemeliharaan"))])
 def delete_pemeliharaan(
     pemeliharaan_id: int,
     db: Session = Depends(get_db),
@@ -80,7 +80,7 @@ def delete_pemeliharaan(
     svc.soft_delete(db, item, current_user)
 
 
-@router.post("/{pemeliharaan_id}/sparepart", response_model=SparepartPublic, status_code=status.HTTP_201_CREATED)
+@router.post("/{pemeliharaan_id}/sparepart", response_model=SparepartPublic, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_feature("pemeliharaan"))])
 def add_sparepart(
     pemeliharaan_id: int,
     payload: SparepartCreate,
@@ -95,7 +95,7 @@ def add_sparepart(
     return sparepart
 
 
-@router.delete("/{pemeliharaan_id}/sparepart/{sparepart_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{pemeliharaan_id}/sparepart/{sparepart_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_feature("pemeliharaan"))])
 def delete_sparepart(
     pemeliharaan_id: int,
     sparepart_id: int,
@@ -113,7 +113,7 @@ def delete_sparepart(
     db.commit()
 
 
-@router.post("/{pemeliharaan_id}/foto-sebelum", response_model=PemeliharaanPublic)
+@router.post("/{pemeliharaan_id}/foto-sebelum", response_model=PemeliharaanPublic, dependencies=[Depends(require_feature("pemeliharaan"))])
 def upload_foto_sebelum(
     pemeliharaan_id: int,
     file: UploadFile = File(...),
@@ -127,7 +127,7 @@ def upload_foto_sebelum(
     return item
 
 
-@router.post("/{pemeliharaan_id}/foto-sesudah", response_model=PemeliharaanPublic)
+@router.post("/{pemeliharaan_id}/foto-sesudah", response_model=PemeliharaanPublic, dependencies=[Depends(require_feature("pemeliharaan"))])
 def upload_foto_sesudah(
     pemeliharaan_id: int,
     file: UploadFile = File(...),
