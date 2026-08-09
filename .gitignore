@@ -36,3 +36,7 @@ docker-compose.override.yml
 # Private licensing keys – do not commit
 backend/app/core/keys/*private*.pem
 backend/app/core/keys/*.key
+license-generator/private_key.pem
+
+# TypeScript build cache
+*.tsbuildinfo

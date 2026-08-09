@@ -1,10 +1,11 @@
 import { DownloadOutlined } from "@ant-design/icons";
-import { Button, Card, Select, Space } from "antd";
+import { Button, Card, Select, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/api/client";
 import { jenisKendaraanApi, lokasiApi } from "@/api/masterData";
 import { STATUS_LABEL } from "@/types/armada";
 import type { JenisKendaraan, Lokasi } from "@/types/masterData";
+import { useLicense } from "@/hooks/useLicense";
 
 export default function Laporan() {
   const [jenisList, setJenisList] = useState<JenisKendaraan[]>([]);
@@ -13,6 +14,8 @@ export default function Laporan() {
   const [lokasiId, setLokasiId] = useState<number>();
   const [status, setStatus] = useState<string>();
   const [downloading, setDownloading] = useState(false);
+
+  const { hasFeature } = useLicense();
 
   useEffect(() => {
     jenisKendaraanApi.list().then(setJenisList);
@@ -65,13 +68,22 @@ export default function Laporan() {
           options={Object.entries(STATUS_LABEL).map(([value, label]) => ({ value, label }))}
         />
       </Space>
+
       <Space>
-        <Button icon={<DownloadOutlined />} loading={downloading} onClick={() => handleExport("excel")}>
-          Export Excel
-        </Button>
-        <Button icon={<DownloadOutlined />} loading={downloading} onClick={() => handleExport("pdf")}>
-          Export PDF
-        </Button>
+        {hasFeature("export_laporan") ? (
+          <>
+            <Button icon={<DownloadOutlined />} loading={downloading} onClick={() => handleExport("excel")}>
+              Export Excel
+            </Button>
+            <Button icon={<DownloadOutlined />} loading={downloading} onClick={() => handleExport("pdf")}>
+              Export PDF
+            </Button>
+          </>
+        ) : (
+          <Typography.Text type="secondary" style={{ fontStyle: "italic" }}>
+            Fitur export tidak tersedia pada paket lisensi Anda.
+          </Typography.Text>
+        )}
       </Space>
     </Card>
   );

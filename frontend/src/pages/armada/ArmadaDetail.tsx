@@ -61,7 +61,13 @@ export default function ArmadaDetail() {
 
   async function handlePindahLokasi(values: { lokasi_baru_id: number; keterangan?: string }) {
     try {
-      await armadaApi.pindahLokasi(armada.id, values.lokasi_baru_id, values.keterangan);
+      if (!armada) return;
+
+await armadaApi.pindahLokasi(
+  armada.id,
+  values.lokasi_baru_id,
+  values.keterangan
+);
       message.success("Lokasi armada berhasil diperbarui");
       setPindahOpen(false);
       pindahForm.resetFields();
@@ -73,7 +79,13 @@ export default function ArmadaDetail() {
 
   async function handleUbahStatus(values: { status_baru: StatusArmada; keterangan?: string }) {
     try {
-      await armadaApi.ubahStatus(armada.id, values.status_baru, values.keterangan);
+      if (!armada) return;
+
+await armadaApi.ubahStatus(
+  armada.id,
+  values.status_baru,
+  values.keterangan
+);
       if (STATUS_KRITIS.includes(values.status_baru)) {
         message.success("Pengajuan status kritis dikirim, menunggu approval Kabid");
       } else {
@@ -132,7 +144,7 @@ export default function ArmadaDetail() {
             </Descriptions.Item>
             <Descriptions.Item label="Tahun">{armada.tahun ?? "-"}</Descriptions.Item>
             <Descriptions.Item label="No. Polisi">{armada.no_polisi ?? "-"}</Descriptions.Item>
-            <Descriptions.Item label="No. Lambung">{armada.no_lambung ?? "-"}</Descriptions.Item>
+
             <Descriptions.Item label="No. Mesin">{armada.no_mesin ?? "-"}</Descriptions.Item>
             <Descriptions.Item label="No. Rangka">{armada.no_rangka ?? "-"}</Descriptions.Item>
             <Descriptions.Item label="No. BPKB">{armada.no_bpkb ?? "-"}</Descriptions.Item>

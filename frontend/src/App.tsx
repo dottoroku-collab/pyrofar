@@ -1,5 +1,6 @@
 import { ConfigProvider } from "antd";
 import { BrowserRouter } from "react-router-dom";
+
 import AppRouter from "@/routes/AppRouter";
 import { antdTheme } from "@/theme/antdTheme";
 
