@@ -1,0 +1,45 @@
+PLANS = {
+    "BASIC": {
+        "name": "Basic",
+        "max_users": 5,
+        "max_armada": 50,
+        "features": [
+            "dashboard",
+            "armada",
+            "pemeliharaan",
+            "qr_armada",
+        ],
+    },
+    "PRO": {
+        "name": "Professional",
+        "max_users": 20,
+        "max_armada": 250,
+        "features": [
+            "dashboard",
+            "armada",
+            "pemeliharaan",
+            "qr_armada",
+            "approval",
+            "laporan",
+            "export_laporan",
+            "audit_log",
+            "analytics",
+        ],
+    },
+    "ENTERPRISE": {
+        "name": "Enterprise",
+        "max_users": None,
+        "max_armada": None,
+        "features": [
+            "dashboard",
+            "armada",
+            "pemeliharaan",
+            "qr_armada",
+            "approval",
+            "laporan",
+            "export_laporan",
+            "audit_log",
+            "analytics",
+        ],
+    },
+}
