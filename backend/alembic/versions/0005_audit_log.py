@@ -14,15 +14,13 @@ down_revision = "0004"
 branch_labels = None
 depends_on = None
 
-audit_aksi_enum = sa.Enum(
+audit_aksi_enum = postgresql.ENUM(
     "login", "tambah", "edit", "hapus", "pindah_lokasi", "input_maintenance", "approve", "reject",
     name="audit_aksi_enum",
 )
 
 
 def upgrade() -> None:
-    audit_aksi_enum.create(op.get_bind(), checkfirst=True)
-
     op.create_table(
         "audit_log",
         sa.Column("id", sa.BigInteger(), primary_key=True),

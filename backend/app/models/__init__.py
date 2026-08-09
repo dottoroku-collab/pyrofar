@@ -10,5 +10,6 @@ from app.models.pemeliharaan import Pemeliharaan, StatusPemeliharaan  # noqa: F4
 from app.models.sparepart import Sparepart  # noqa: F401
 from app.models.jadwal_servis import JadwalServis, JenisReminder  # noqa: F401
 from app.models.audit_log import AuditLog, AuditAksi  # noqa: F401
-
+from app.models.app_settings import AppSettings
+from app.models.license import License
 # Seluruh entitas ERD Tahap 5 sudah terdaftar.

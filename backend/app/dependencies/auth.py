@@ -6,7 +6,9 @@ from app.core.database import get_db
 from app.core.security import decode_token
 from app.models.user import User, UserRole
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+from app.services import license_service
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 def get_current_user(
@@ -45,6 +47,23 @@ def require_role(allowed_roles: list[UserRole]):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Anda tidak memiliki akses untuk aksi ini",
             )
+        return current_user
+
+    return _checker
+
+def require_feature(feature_code: str):
+    """Dependency factory: batasi endpoint berdasarkan feature license."""
+
+    def _checker(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+        if not license_service.has_feature(db, feature_code):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Feature '{feature_code}' tidak tersedia pada lisensi ini",
+            )
+
         return current_user
 
     return _checker

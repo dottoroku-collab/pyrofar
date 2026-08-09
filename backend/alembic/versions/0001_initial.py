@@ -7,21 +7,24 @@ Create Date: 2026-08-03
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 revision = "0001"
 down_revision = None
 branch_labels = None
 depends_on = None
 
-user_role_enum = sa.Enum(
+user_role_enum = postgresql.ENUM(
     "administrator", "pimpinan", "kabid", "operator", "teknisi",
     name="user_role",
+    create_type=False,
 )
 
 
 def upgrade() -> None:
-    user_role_enum.create(op.get_bind(), checkfirst=True)
+    bind = op.get_bind()
 
+    user_role_enum.create(bind, checkfirst=True)
     op.create_table(
         "users",
         sa.Column("id", sa.BigInteger(), primary_key=True),
@@ -70,4 +73,3 @@ def downgrade() -> None:
     op.drop_table("lokasi")
     op.drop_table("jenis_kendaraan")
     op.drop_table("users")
-    user_role_enum.drop(op.get_bind(), checkfirst=True)

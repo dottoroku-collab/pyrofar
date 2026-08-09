@@ -7,23 +7,21 @@ Create Date: 2026-09-07
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 revision = "0004"
 down_revision = "0003"
 branch_labels = None
 depends_on = None
 
-status_pemeliharaan_enum = sa.Enum("proses", "selesai", name="status_pemeliharaan_enum")
-jenis_reminder_enum = sa.Enum(
+status_pemeliharaan_enum = postgresql.ENUM("proses", "selesai", name="status_pemeliharaan_enum")
+jenis_reminder_enum = postgresql.ENUM(
     "servis_berkala", "ganti_oli", "ganti_ban", "perpanjangan_stnk",
     name="jenis_reminder_enum",
 )
 
 
 def upgrade() -> None:
-    bind = op.get_bind()
-    status_pemeliharaan_enum.create(bind, checkfirst=True)
-    jenis_reminder_enum.create(bind, checkfirst=True)
 
     op.create_table(
         "pemeliharaan",

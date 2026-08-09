@@ -7,33 +7,29 @@ Create Date: 2026-08-10
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 revision = "0002"
 down_revision = "0001"
 branch_labels = None
 depends_on = None
 
-status_armada_enum = sa.Enum(
+status_armada_enum = postgresql.ENUM(
     "standby", "sedang_bertugas", "pemeliharaan", "menunggu_sparepart",
     "rusak_ringan", "rusak_berat", "tidak_aktif", "menunggu_approval",
     name="status_armada_enum",
 )
-approval_status_enum = sa.Enum(
+approval_status_enum = postgresql.ENUM(
     "tidak_perlu", "pending", "disetujui", "ditolak",
     name="approval_status_enum",
 )
-jenis_file_armada_enum = sa.Enum(
+jenis_file_armada_enum = postgresql.ENUM(
     "stnk", "bpkb", "foto_depan", "foto_belakang", "foto_kanan", "foto_kiri", "foto_interior",
     name="jenis_file_armada_enum",
 )
 
 
 def upgrade() -> None:
-    bind = op.get_bind()
-    status_armada_enum.create(bind, checkfirst=True)
-    approval_status_enum.create(bind, checkfirst=True)
-    jenis_file_armada_enum.create(bind, checkfirst=True)
-
     op.create_table(
         "armada",
         sa.Column("id", sa.BigInteger(), primary_key=True),

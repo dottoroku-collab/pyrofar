@@ -15,6 +15,8 @@ from app.api.v1.endpoints import (
     pemeliharaan,
     public,
     users,
+    settings,
+    license,
 )
 
 api_router = APIRouter()
@@ -32,6 +34,8 @@ api_router.include_router(laporan.router)
 api_router.include_router(audit_log.router)
 api_router.include_router(public.router)
 api_router.include_router(users.router)
+api_router.include_router(settings.router)
+api_router.include_router(license.router)
 
 # Seluruh modul FR-01 s.d. FR-26 (Tahap 1) sudah punya router.
 # Sprint 7: hardening, testing, deployment (tidak menambah modul baru).
