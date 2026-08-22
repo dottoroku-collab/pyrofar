@@ -1,12 +1,4 @@
 services:
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    networks:
-      - pyrofar_net
-
   minio:
     image: minio/minio
     restart: unless-stopped
@@ -20,7 +12,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     networks:
-      - pyrofar_net
+      - proxy-network
 
   livekit:
     image: livekit/livekit-server:latest
@@ -30,7 +22,7 @@ services:
       - "7880:7880"
       - "7881-7882:7881-7882/udp"
     networks:
-      - pyrofar_net
+      - proxy-network
 
   backend:
     build:
@@ -40,7 +32,7 @@ services:
     env_file: .env
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=${REDIS_URL}
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-admin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-supersecret123}
@@ -50,13 +42,13 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - redis
       - minio
       - livekit
     volumes:
       - uploads_data:/app/uploads
     networks:
-      - pyrofar_net
+      - proxy-network
+      - backend-network
 
   worker:
     build:
@@ -67,7 +59,7 @@ services:
     env_file: .env
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=${REDIS_URL}
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-admin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-supersecret123}
@@ -75,11 +67,11 @@ services:
       - LIVEKIT_API_KEY=devkey
       - LIVEKIT_API_SECRET=secret
     depends_on:
-      - redis
       - minio
       - livekit
     networks:
-      - pyrofar_net
+      - backend-network
+      - proxy-network
 
   frontend:
     build:
@@ -91,13 +83,14 @@ services:
     depends_on:
       - backend
     networks:
-      - pyrofar_net
+      - proxy-network
 
 networks:
-  pyrofar_net:
-    driver: bridge
+  proxy-network:
+    external: true
+  backend-network:
+    external: true
 
 volumes:
-  redis_data:
   minio_data:
   uploads_data:
