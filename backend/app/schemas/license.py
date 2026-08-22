@@ -32,3 +32,15 @@ class LicenseResponse(BaseModel):
 class LicenseStatusResponse(BaseModel):
     activated: bool
     license: LicenseResponse | None = None
+
+
+class LicenseGenerateRequest(BaseModel):
+    plan_code: str
+    organization_name: str
+    years: int = 1
+
+
+class LicenseGenerateResponse(BaseModel):
+    license_key: str
+    license_id: str
+    expires_at: str

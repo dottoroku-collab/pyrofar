@@ -29,4 +29,13 @@ export const superadminApi = {
     const response = await api.get(`/superadmin/tenants/${tenantId}/users`);
     return response.data;
   },
+
+  generateLicense: async (data: {
+    plan_code: string;
+    organization_name: string;
+    years: number;
+  }): Promise<{ license_key: string; license_id: string; expires_at: string }> => {
+    const response = await api.post(`/superadmin/licenses/generate`, data);
+    return response.data;
+  },
 };

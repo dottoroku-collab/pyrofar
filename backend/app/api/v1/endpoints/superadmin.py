@@ -9,6 +9,8 @@ from app.models.user import User
 from app.models.tenant import Tenant
 from app.schemas.tenant import TenantCreate, TenantUpdate, TenantPublic
 from app.schemas.user import UserAdminPublic
+from app.schemas.license import LicenseGenerateRequest, LicenseGenerateResponse
+from app.services.license_generator import generate_license_key
 
 router = APIRouter()
 
@@ -76,3 +78,16 @@ def get_tenant_users(
 ):
     """Get all users for a specific tenant (Superadmin only)"""
     return db.query(User).filter(User.tenant_id == tenant_id, User.is_deleted.is_(False)).all()
+
+@router.post("/licenses/generate", response_model=LicenseGenerateResponse)
+def generate_license(
+    payload: LicenseGenerateRequest,
+    _=Depends(get_current_superadmin),
+):
+    """Generate a new license key (Superadmin only)"""
+    result = generate_license_key(
+        plan_code=payload.plan_code,
+        organization_name=payload.organization_name,
+        years=payload.years,
+    )
+    return result

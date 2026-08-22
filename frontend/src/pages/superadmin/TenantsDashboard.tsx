@@ -9,6 +9,14 @@ export default function TenantsDashboard() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
+  const [isLicenseModalVisible, setIsLicenseModalVisible] = useState(false);
+  const [licenseForm] = Form.useForm();
+  const [generatedLicense, setGeneratedLicense] = useState<{
+    license_key: string;
+    license_id: string;
+    expires_at: string;
+  } | null>(null);
+
   const fetchTenants = async () => {
     setLoading(true);
     try {
@@ -30,6 +38,12 @@ export default function TenantsDashboard() {
     setIsModalVisible(true);
   };
 
+  const handleGenerateLicense = () => {
+    licenseForm.resetFields();
+    setGeneratedLicense(null);
+    setIsLicenseModalVisible(true);
+  };
+
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
@@ -39,6 +53,18 @@ export default function TenantsDashboard() {
       fetchTenants();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleLicenseModalOk = async () => {
+    try {
+      const values = await licenseForm.validateFields();
+      const res = await superadminApi.generateLicense(values);
+      message.success("Lisensi berhasil digenerate!");
+      setGeneratedLicense(res);
+    } catch (error) {
+      console.error(error);
+      message.error("Gagal men-generate lisensi.");
     }
   };
 
@@ -93,7 +119,10 @@ export default function TenantsDashboard() {
     <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <h2>Kelola Tenant (Superadmin)</h2>
-        <Button type="primary" onClick={handleAdd}>Tambah Tenant</Button>
+        <Space>
+          <Button type="default" onClick={handleGenerateLicense}>Generate License</Button>
+          <Button type="primary" onClick={handleAdd}>Tambah Tenant</Button>
+        </Space>
       </div>
       <Table 
         columns={columns} 
@@ -122,10 +151,58 @@ export default function TenantsDashboard() {
               <Select.Option value="suspended">Suspended</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item name="plan_code" label="Plan Code" initialValue="free">
-            <Input />
+          <Form.Item name="plan_code" label="Plan Code" initialValue="BASIC">
+            <Select>
+              <Select.Option value="BASIC">BASIC</Select.Option>
+              <Select.Option value="PRO">PRO</Select.Option>
+              <Select.Option value="ENTERPRISE">ENTERPRISE</Select.Option>
+            </Select>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Generate License"
+        open={isLicenseModalVisible}
+        onOk={handleLicenseModalOk}
+        onCancel={() => {
+          setIsLicenseModalVisible(false);
+          setGeneratedLicense(null);
+        }}
+        okText="Generate"
+      >
+        {generatedLicense ? (
+          <div>
+            <p><strong>License ID:</strong> {generatedLicense.license_id}</p>
+            <p><strong>Expires At:</strong> {new Date(generatedLicense.expires_at).toLocaleDateString()}</p>
+            <p><strong>License Key:</strong></p>
+            <Input.TextArea 
+              rows={4} 
+              value={generatedLicense.license_key} 
+              readOnly 
+              onClick={(e) => (e.target as HTMLTextAreaElement).select()} 
+            />
+            <p style={{ marginTop: 10, color: 'gray', fontSize: 12 }}>
+              Salin License Key di atas dan berikan ke Tenant untuk diaktifkan.
+            </p>
+          </div>
+        ) : (
+          <Form form={licenseForm} layout="vertical">
+            <Form.Item name="plan_code" label="Paket Lisensi" rules={[{ required: true }]} initialValue="BASIC">
+              <Select>
+                <Select.Option value="BASIC">BASIC</Select.Option>
+                <Select.Option value="PRO">PRO</Select.Option>
+                <Select.Option value="ENTERPRISE">ENTERPRISE</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="organization_name" label="Nama Organisasi" rules={[{ required: true }]}>
+              <Input placeholder="Misal: PT Armada Jaya" />
+            </Form.Item>
+            <Form.Item name="years" label="Masa Berlaku (Tahun)" rules={[{ required: true }]} initialValue={1}>
+              <Input type="number" min={1} max={10} />
+            </Form.Item>
+          </Form>
+        )}
       </Modal>
     </div>
   );
