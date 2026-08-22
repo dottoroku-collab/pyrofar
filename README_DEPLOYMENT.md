@@ -1,62 +1,39 @@
-# Deployment Pyrofar di VPS dengan Nginx Proxy Manager (NPM)
+# Deployment Pyrofar di Hostinger Cloud Server
 
-Panduan ini berisi langkah-langkah untuk mendeploy Pyrofar di VPS yang sudah memiliki Nginx Proxy Manager dan PostgreSQL yang berjalan secara terpisah.
+Panduan ini berisi langkah-langkah untuk mendeploy Pyrofar di Hostinger Cloud / VPS secara otomatis menggunakan **GitHub Actions**.
 
-## 1. Persiapan Environment
+## 1. Persiapan Server Hostinger (Satu Kali Saja)
 
-Buat file `.env` di folder root project (`pyrofar/`) dan sesuaikan nilainya:
+1. Pastikan **Docker** dan **Docker Compose** sudah terinstall di server Hostinger Anda.
+2. Buat direktori deployment, misalnya di `/opt/pyrofar`.
+3. Buat file `/opt/pyrofar/.env` secara manual di server dengan isi (minimal):
 
 ```env
-# URL Database PostgreSQL eksternal yang ada di VPS Anda
-DATABASE_URL=postgresql://user:password@172.17.0.1:5432/sim_armada
-
-# MinIO Storage
+POSTGRES_PASSWORD=supersecret_db_pass
 MINIO_ROOT_USER=admin
 MINIO_ROOT_PASSWORD=supersecret123
-
-# JWT & Keamanan
 JWT_SECRET_KEY=ubah_ini_menjadi_secret_yang_sangat_panjang_dan_aman
 CORS_ORIGINS=["*"]
 ```
-*Catatan: `172.17.0.1` adalah default IP untuk docker bridge. Jika PostgreSQL Anda berjalan di network Docker yang sama, Anda bisa langsung tembak IP tersebut, atau gunakan IP publik VPS jika diizinkan.*
 
-## 2. Menjalankan Docker Compose
+## 2. Persiapan DNS (Hostinger Panel)
 
-Pastikan Anda berada di root folder `pyrofar` lalu jalankan:
+Arahkan A-Record di DNS Management Hostinger Anda ke IP Cloud Server Anda (`145.223.108.140`):
+- `api` -> `145.223.108.140` (Untuk Backend API)
+- `livekit` -> `145.223.108.140` (Untuk Audio PTT WebRTC)
+- `app` -> `145.223.108.140` (Untuk Web Dashboard)
 
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
+> Note: Cloudflare proxy boleh dimatikan (DNS Only) agar port WebRTC dan Caddy auto-SSL berjalan lancar.
 
-Docker compose ini akan menjalankan:
-1. `backend` (FastAPI) berjalan di port `8000`
-2. `frontend` (Vite/Nginx React) berjalan di port `3080`
-3. `livekit` (WebRTC) berjalan di port `7880` (TCP) dan `7881-7882` (UDP)
-4. `redis` & `minio` & `worker` (Background jobs)
+## 3. Setup GitHub Secrets untuk Auto Deploy
 
-## 3. Setel Nginx Proxy Manager (NPM)
+Masuk ke Repository GitHub `dottoroku-collab/pyrofar`, buka **Settings** -> **Secrets and variables** -> **Actions**, lalu tambahkan *Repository secrets* berikut:
 
-Masuk ke panel NPM Anda dan buat 3 buah **Proxy Host**:
+- `HOST`: `145.223.108.140`
+- `USERNAME`: Username SSH server Anda (contoh: `root` atau `ubuntu`)
+- `SSH_KEY`: Private Key SSH (isinya yang berawal dengan `-----BEGIN PRIVATE KEY-----`). Anda perlu *generate* SSH key ini di server atau komputer Anda, taruh public key ke `~/.ssh/authorized_keys` di Hostinger, dan masukkan private key ke secret ini.
 
-### A. Backend API (`api.pyrofar.com`)
-- **Domain Names**: `api.pyrofar.com`
-- **Forward Hostname / IP**: IP lokal VPS atau `172.17.0.1` (atau IP docker container)
-- **Forward Port**: `8000`
-- **Websockets Support**: ✅ Centang (Wajib untuk tracking / realtime dashboard)
-- **SSL**: Request SSL sertifikat baru (Let's Encrypt) -> Enable `Force SSL`
+## 4. Alur Update (Deploy)
+Setiap kali Anda melakukan `git push` ke branch `main`, GitHub Actions akan otomatis login ke Hostinger Anda, mendownload kode terbaru, dan melakukan restart/build pada container Docker melalui `docker-compose.prod.yml`.
 
-### B. LiveKit PTT (`livekit.pyrofar.com`)
-- **Domain Names**: `livekit.pyrofar.com`
-- **Forward Hostname / IP**: IP lokal VPS atau `172.17.0.1`
-- **Forward Port**: `7880`
-- **Websockets Support**: ✅ Centang (Sangat Wajib untuk WebRTC)
-- **SSL**: Request SSL sertifikat baru -> Enable `Force SSL`
-
-### C. Web Dashboard (`app.pyrofar.com`)
-- **Domain Names**: `app.pyrofar.com` (atau `dashboard.pyrofar.com`)
-- **Forward Hostname / IP**: IP lokal VPS atau `172.17.0.1`
-- **Forward Port**: `3080`
-- **SSL**: Request SSL sertifikat baru -> Enable `Force SSL`
-
----
-✅ **Selesai!** Sekarang Pyrofar dapat diakses melalui domain publik yang diamankan dengan SSL HTTPS.
+Anda tidak perlu login manual ke server lagi!

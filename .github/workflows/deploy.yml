@@ -1,0 +1,36 @@
+name: Deploy to Hostinger Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Pastikan folder target ada
+            mkdir -p /opt/pyrofar
+            cd /opt/pyrofar
+            
+            # Clone repo jika belum ada, atau pull jika sudah ada
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/dottoroku-collab/pyrofar.git .
+            else
+              # Hapus perubahan lokal jika ada yang nyangkut, lalu tarik kode terbaru
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+            
+            # Build dan restart container docker
+            docker compose -f docker-compose.prod.yml up -d --build
