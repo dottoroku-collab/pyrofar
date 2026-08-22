@@ -9,8 +9,6 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
     networks:
       - proxy-network
 
@@ -40,7 +38,6 @@ services:
       - LIVEKIT_API_KEY=devkey
       - LIVEKIT_API_SECRET=secret
     ports:
-      - "8000:8000"
     depends_on:
       - minio
       - livekit
@@ -79,7 +76,6 @@ services:
       dockerfile: Dockerfile.prod
     restart: unless-stopped
     ports:
-      - "3080:8080"
     depends_on:
       - backend
     networks:
