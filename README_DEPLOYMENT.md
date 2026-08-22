@@ -1,39 +1,61 @@
-# Deployment Pyrofar di Hostinger Cloud Server
+# Deployment Pyrofar di VPS (dengan Nginx Proxy Manager & GitHub Actions)
 
-Panduan ini berisi langkah-langkah untuk mendeploy Pyrofar di Hostinger Cloud / VPS secara otomatis menggunakan **GitHub Actions**.
+Panduan ini berisi langkah-langkah untuk mendeploy Pyrofar di VPS Anda (`103.151.20.74`) secara otomatis menggunakan **GitHub Actions**. VPS Anda sudah diasumsikan memiliki PostgreSQL dan Nginx Proxy Manager (NPM).
 
-## 1. Persiapan Server Hostinger (Satu Kali Saja)
+## 1. Setup GitHub Secrets untuk Auto Deploy
 
-1. Pastikan **Docker** dan **Docker Compose** sudah terinstall di server Hostinger Anda.
-2. Buat direktori deployment, misalnya di `/opt/pyrofar`.
-3. Buat file `/opt/pyrofar/.env` secara manual di server dengan isi (minimal):
+Masuk ke Repository GitHub `dottoroku-collab/pyrofar`, buka **Settings** -> **Secrets and variables** -> **Actions**, lalu tambahkan *Repository secrets* berikut:
+
+- `HOST`: `103.151.20.74`
+- `USERNAME`: Username SSH VPS Anda (contoh: `root` atau `ubuntu`)
+- `SSH_KEY`: Private Key SSH VPS Anda (isinya yang berawal dengan `-----BEGIN PRIVATE KEY-----`). Anda perlu *generate* SSH key ini di server atau komputer Anda, taruh public key ke `~/.ssh/authorized_keys` di VPS, dan masukkan private key ke secret ini.
+
+## 2. Persiapan VPS (Satu Kali Saja)
+
+Buat direktori `/opt/pyrofar` (atau direktori manapun yang di-setup di script GitHub Actions) dan buat file `.env`:
 
 ```env
-POSTGRES_PASSWORD=supersecret_db_pass
+# URL Database PostgreSQL eksternal yang ada di VPS Anda
+DATABASE_URL=postgresql://user:password@172.17.0.1:5432/sim_armada
+
+# MinIO Storage
 MINIO_ROOT_USER=admin
 MINIO_ROOT_PASSWORD=supersecret123
+
+# JWT & Keamanan
 JWT_SECRET_KEY=ubah_ini_menjadi_secret_yang_sangat_panjang_dan_aman
 CORS_ORIGINS=["*"]
 ```
 
-## 2. Persiapan DNS (Hostinger Panel)
+## 3. Alur Update Otomatis (Deploy)
+Setiap kali Anda melakukan `git push` ke branch `main`, GitHub Actions akan otomatis login ke VPS, menarik kode terbaru, dan me-restart container melalui `docker-compose.prod.yml`.
 
-Arahkan A-Record di DNS Management Hostinger Anda ke IP Cloud Server Anda (`145.223.108.140`):
-- `api` -> `145.223.108.140` (Untuk Backend API)
-- `livekit` -> `145.223.108.140` (Untuk Audio PTT WebRTC)
-- `app` -> `145.223.108.140` (Untuk Web Dashboard)
+Docker compose ini akan menjalankan:
+1. `backend` (FastAPI) berjalan di port `8000`
+2. `frontend` (Vite/Nginx React) berjalan di port `3080`
+3. `livekit` (WebRTC) berjalan di port `7880` (TCP) dan `7881-7882` (UDP)
+4. `redis` & `minio` & `worker` (Background jobs)
 
-> Note: Cloudflare proxy boleh dimatikan (DNS Only) agar port WebRTC dan Caddy auto-SSL berjalan lancar.
+## 4. Setel Nginx Proxy Manager (NPM)
 
-## 3. Setup GitHub Secrets untuk Auto Deploy
+Masuk ke panel NPM Anda dan buat 3 buah **Proxy Host**:
 
-Masuk ke Repository GitHub `dottoroku-collab/pyrofar`, buka **Settings** -> **Secrets and variables** -> **Actions**, lalu tambahkan *Repository secrets* berikut:
+### A. Backend API (`api.pyrofar.com`)
+- **Domain Names**: `api.pyrofar.com`
+- **Forward Hostname / IP**: `172.17.0.1` (atau IP lokal VPS)
+- **Forward Port**: `8000`
+- **Websockets Support**: ✅ Centang
+- **SSL**: Request SSL sertifikat baru (Let's Encrypt) -> Enable `Force SSL`
 
-- `HOST`: `145.223.108.140`
-- `USERNAME`: Username SSH server Anda (contoh: `root` atau `ubuntu`)
-- `SSH_KEY`: Private Key SSH (isinya yang berawal dengan `-----BEGIN PRIVATE KEY-----`). Anda perlu *generate* SSH key ini di server atau komputer Anda, taruh public key ke `~/.ssh/authorized_keys` di Hostinger, dan masukkan private key ke secret ini.
+### B. LiveKit PTT (`livekit.pyrofar.com`)
+- **Domain Names**: `livekit.pyrofar.com`
+- **Forward Hostname / IP**: `172.17.0.1`
+- **Forward Port**: `7880`
+- **Websockets Support**: ✅ Centang (Sangat Wajib)
+- **SSL**: Request SSL sertifikat baru -> Enable `Force SSL`
 
-## 4. Alur Update (Deploy)
-Setiap kali Anda melakukan `git push` ke branch `main`, GitHub Actions akan otomatis login ke Hostinger Anda, mendownload kode terbaru, dan melakukan restart/build pada container Docker melalui `docker-compose.prod.yml`.
-
-Anda tidak perlu login manual ke server lagi!
+### C. Web Dashboard (`app.pyrofar.com`)
+- **Domain Names**: `app.pyrofar.com`
+- **Forward Hostname / IP**: `172.17.0.1`
+- **Forward Port**: `3080`
+- **SSL**: Request SSL sertifikat baru -> Enable `Force SSL`

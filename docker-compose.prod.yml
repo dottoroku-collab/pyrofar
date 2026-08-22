@@ -1,16 +1,4 @@
 services:
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: sim_armada
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - pyrofar_net
-
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -28,6 +16,9 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-supersecret123}
     volumes:
       - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     networks:
       - pyrofar_net
 
@@ -48,7 +39,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/sim_armada
+      - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379/0
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-admin}
@@ -56,8 +47,9 @@ services:
       - LIVEKIT_URL=http://livekit:7880
       - LIVEKIT_API_KEY=devkey
       - LIVEKIT_API_SECRET=secret
+    ports:
+      - "8000:8000"
     depends_on:
-      - postgres
       - redis
       - minio
       - livekit
@@ -74,7 +66,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/sim_armada
+      - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379/0
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-admin}
@@ -83,7 +75,6 @@ services:
       - LIVEKIT_API_KEY=devkey
       - LIVEKIT_API_SECRET=secret
     depends_on:
-      - postgres
       - redis
       - minio
       - livekit
@@ -95,25 +86,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
     restart: unless-stopped
-    depends_on:
-      - backend
-    networks:
-      - pyrofar_net
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
+      - "3080:8080"
     depends_on:
-      - frontend
       - backend
-      - livekit
     networks:
       - pyrofar_net
 
@@ -122,9 +98,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
   redis_data:
   minio_data:
   uploads_data:
-  caddy_data:
-  caddy_config:
