@@ -18,6 +18,7 @@ class UserPublic(BaseModel):
     nama: str
     email: Optional[EmailStr] = None
     role: UserRole
+    is_superadmin: bool = False
 
     class Config:
         from_attributes = True
