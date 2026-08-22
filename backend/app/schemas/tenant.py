@@ -11,6 +11,20 @@ from pydantic import BaseModel, EmailStr
 # Tenant                                                              #
 # ------------------------------------------------------------------ #
 
+class TenantCreate(BaseModel):
+    name: str
+    slug: str
+    status: str = "active"
+    plan_code: str = "free"
+
+
+class TenantUpdate(BaseModel):
+    name: str | None = None
+    slug: str | None = None
+    status: str | None = None
+    plan_code: str | None = None
+
+
 class TenantPublic(BaseModel):
     id: UUID
     name: str

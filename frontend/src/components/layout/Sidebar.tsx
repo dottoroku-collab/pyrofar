@@ -28,6 +28,7 @@ interface NavItem {
   label: string;
   roles?: string[];
   feature?: string;
+  requireSuperadmin?: boolean;
   children?: NavItem[];
 }
 
@@ -101,7 +102,7 @@ const NAV_STRUCTURE: NavItem[] = [
   },
   {
     key: "admin",
-    icon: <UserOutlined />,
+    icon: <SettingOutlined />,
     label: "ADMIN",
     children: [
       { key: "/users", label: "Users", roles: ["administrator"] },
@@ -111,18 +112,29 @@ const NAV_STRUCTURE: NavItem[] = [
       { key: "/audit-log", label: "Audit Log", roles: ["administrator"], feature: "audit_log" },
     ],
   },
+  {
+    key: "superadmin",
+    icon: <CloudServerOutlined />,
+    label: "SUPERADMIN",
+    requireSuperadmin: true,
+    children: [
+      { key: "/superadmin/tenants", label: "Tenants" },
+      { key: "/superadmin/users", label: "Global Users" },
+    ],
+  },
 ];
 
-function filterNavItems(items: NavItem[], role: string | undefined, hasFeature: (f: string) => boolean): any[] {
+function filterNavItems(items: NavItem[], role: string | undefined, hasFeature: (f: string) => boolean, isSuperadmin?: boolean): any[] {
   return items
     .filter((item) => {
+      if (item.requireSuperadmin && !isSuperadmin) return false;
       const hasRole = !item.roles || !role || item.roles.includes(role);
       const isFeatureAllowed = !item.feature || hasFeature(item.feature);
       return hasRole && isFeatureAllowed;
     })
     .map((item) => {
       if (item.children) {
-        const filteredChildren = filterNavItems(item.children, role, hasFeature);
+        const filteredChildren = filterNavItems(item.children, role, hasFeature, isSuperadmin);
         if (filteredChildren.length === 0) return null; // Hide parent if no children visible
         return {
           key: item.key,
@@ -145,13 +157,14 @@ export default function Sidebar() {
   const location = useLocation();
 
   const role = useAuthStore((s) => s.user?.role);
+  const isSuperadmin = useAuthStore((s) => s.user?.is_superadmin);
   const { settings } = useTenantStore();
   const tokens = useTokens();
   const { hasFeature } = useLicense();
 
   if (!settings) return null;
 
-  const items = filterNavItems(NAV_STRUCTURE, role, hasFeature);
+  const items = filterNavItems(NAV_STRUCTURE, role, hasFeature, isSuperadmin);
 
   const selectedKey =
     location.pathname === "/pemeliharaan/new"

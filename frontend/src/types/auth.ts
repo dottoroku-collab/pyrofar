@@ -14,6 +14,7 @@ export interface UserPublic {
   nama: string;
   email: string;
   role: UserRole;
+  is_superadmin?: boolean;
 }
 
 export interface TokenResponse {

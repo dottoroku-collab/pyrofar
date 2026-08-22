@@ -1,0 +1,78 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from uuid import UUID
+from typing import List
+
+from app.core.database import get_db
+from app.dependencies.auth import get_current_superadmin
+from app.models.user import User
+from app.models.tenant import Tenant
+from app.schemas.tenant import TenantCreate, TenantUpdate, TenantPublic
+from app.schemas.user import UserAdminPublic
+
+router = APIRouter()
+
+@router.get("/tenants", response_model=List[TenantPublic])
+def get_all_tenants(
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Get all tenants (Superadmin only)"""
+    return db.query(Tenant).all()
+
+@router.post("/tenants", response_model=TenantPublic)
+def create_tenant(
+    data: TenantCreate,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Create a new tenant (Superadmin only)"""
+    new_tenant = Tenant(**data.dict())
+    db.add(new_tenant)
+    db.commit()
+    db.refresh(new_tenant)
+    return new_tenant
+
+@router.put("/tenants/{tenant_id}", response_model=TenantPublic)
+def update_tenant(
+    tenant_id: UUID,
+    data: TenantUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Update a tenant (Superadmin only)"""
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(tenant, key, value)
+        
+    db.commit()
+    db.refresh(tenant)
+    return tenant
+
+@router.delete("/tenants/{tenant_id}")
+def delete_tenant(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Delete a tenant (Superadmin only)"""
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+        
+    db.delete(tenant)
+    db.commit()
+    return {"message": "Tenant deleted successfully"}
+
+@router.get("/tenants/{tenant_id}/users", response_model=List[UserAdminPublic])
+def get_tenant_users(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Get all users for a specific tenant (Superadmin only)"""
+    return db.query(User).filter(User.tenant_id == tenant_id, User.is_deleted.is_(False)).all()

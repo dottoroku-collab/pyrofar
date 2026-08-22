@@ -31,6 +31,7 @@ class User(Base):
     role = Column(Enum(UserRole, name="user_role"), nullable=False, default=UserRole.operator_cc)
     roles = relationship("Role", secondary=user_roles, back_populates="users")
     personil = relationship("Personil", back_populates="user", uselist=False)
+    is_superadmin = Column(Boolean, nullable=False, default=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_deleted = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

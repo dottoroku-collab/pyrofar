@@ -51,7 +51,7 @@ def run():
 
         # ---- 2. Ensure admin user exists ---- #
         existing = db.query(User).filter(
-            User.email == "admin@damkar.makassar.go.id"
+            User.email == "bigboss@pyrofar.com"
         ).first()
         if existing:
             print("Admin sudah ada, skip seeding.")
@@ -60,14 +60,15 @@ def run():
         admin = User(
             tenant_id=MAKASSAR_TENANT_ID,
             nama="Administrator",
-            email="admin@damkar.makassar.go.id",
+            email="bigboss@pyrofar.com",
             password_hash=hash_password("ChangeMe123!"),
             role=UserRole.administrator,
             is_active=True,
+            is_superadmin=True,
         )
         db.add(admin)
         db.commit()
-        print("Akun Administrator awal dibuat: admin@damkar.makassar.go.id / ChangeMe123!")
+        print("Akun Administrator awal dibuat: bigboss@pyrofar.com / ChangeMe123!")
         print("SEGERA ganti password ini setelah login pertama.")
     finally:
         db.close()

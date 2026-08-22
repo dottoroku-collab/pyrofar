@@ -27,6 +27,7 @@ from app.api.v1.endpoints import ( stations,
     tracking,
     operations,
     ptt,
+    superadmin,
 )
 
 api_router = APIRouter()
@@ -60,3 +61,5 @@ api_router.include_router(stations.router)
 api_router.include_router(tracking.router)
 api_router.include_router(operations.router, tags=["operations"])
 api_router.include_router(ptt.router, prefix="/ptt", tags=["ptt"])
+api_router.include_router(superadmin.router, prefix="/superadmin", tags=["Superadmin"])
+

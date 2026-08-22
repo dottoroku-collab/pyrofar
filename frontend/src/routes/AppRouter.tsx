@@ -70,9 +70,20 @@ import { useAuthStore } from "@/store/authStore";
 import { useLicense } from "@/hooks/useLicense";
 import { Spin } from "antd";
 
+import TenantsDashboard from "@/pages/superadmin/TenantsDashboard";
+import GlobalUsers from "@/pages/superadmin/GlobalUsers";
+
 function RequireAuth({ children }: { children: JSX.Element }) {
   const accessToken = useAuthStore((s) => s.accessToken);
   if (!accessToken) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function SuperadminRoute({ children }: { children: JSX.Element }) {
+  const user = useAuthStore((s) => s.user);
+  if (!user?.is_superadmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
   return children;
 }
 
@@ -173,6 +184,18 @@ export default function AppRouter() {
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/settings" element={<Pengaturan />} />
         <Route path="/audit-log" element={<FeatureRoute feature="audit_log"><AuditLog /></FeatureRoute>} />
+
+        {/* SUPERADMIN */}
+        <Route path="/superadmin/tenants" element={
+          <SuperadminRoute>
+            <TenantsDashboard />
+          </SuperadminRoute>
+        } />
+        <Route path="/superadmin/users" element={
+          <SuperadminRoute>
+            <GlobalUsers />
+          </SuperadminRoute>
+        } />
 
         {/* Legacy / Shared / Others (To clean up if needed) */}
         <Route path="/master-data" element={<MasterData />} />

@@ -36,6 +36,17 @@ def get_current_user(
     return user
 
 
+def get_current_superadmin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if not current_user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akses ditolak. Fitur ini hanya untuk Superadmin.",
+        )
+    return current_user
+
+
 def require_role(allowed_roles: list[UserRole]):
     """Dependency factory: batasi endpoint hanya untuk role tertentu.
     Contoh: Depends(require_role([UserRole.administrator]))

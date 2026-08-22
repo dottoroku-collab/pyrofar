@@ -49,7 +49,9 @@ class _PttWidgetState extends State<PttWidget> {
       // We will read it from BACKEND_URL and replace port with 7880.
       final backendUrl = ApiClient().dio.options.baseUrl;
       final uri = Uri.parse(backendUrl);
-      final livekitUrl = 'ws://${uri.host}:7880';
+      final livekitUrl = uri.host == 'api.pyrofar.com' 
+          ? 'wss://livekit.pyrofar.com' 
+          : 'ws://${uri.host}:7880';
       debugPrint('PTT: Connecting to LiveKit at $livekitUrl');
 
       // 3. Connect to LiveKit

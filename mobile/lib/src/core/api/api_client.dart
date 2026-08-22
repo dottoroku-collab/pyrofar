@@ -14,16 +14,16 @@ class ApiClient {
   static String getBaseUrl() {
     if (kIsWeb) {
       return const String.fromEnvironment('API_URL',
-          defaultValue: 'http://192.168.88.163:8000/api/v1');
+          defaultValue: 'https://api.pyrofar.com/api/v1');
     }
     if (Platform.isAndroid) {
       // Changed to host IP so it works on physical devices too. 
       // If using emulator, 192.168.88.163 still works as long as they are on the same network.
       return const String.fromEnvironment('API_URL',
-          defaultValue: 'http://192.168.88.163:8000/api/v1');
+          defaultValue: 'https://api.pyrofar.com/api/v1');
     }
     return const String.fromEnvironment('API_URL',
-        defaultValue: 'http://192.168.88.163:8000/api/v1');
+        defaultValue: 'https://api.pyrofar.com/api/v1');
   }
 
   ApiClient._internal() {
