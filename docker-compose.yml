@@ -6,34 +6,34 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sim_armada
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - proxy-network
 
   backend:
     build: ./backend
     restart: unless-stopped
     env_file: .env
-    ports:
-      - "8000:8000"
     volumes:
       - ./backend:/app
     depends_on:
       - postgres
+    networks:
+      - proxy-network
 
   frontend:
     build: ./frontend
     restart: unless-stopped
     environment:
       - BACKEND_URL=http://backend:8000
-    ports:
-      - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     depends_on:
       - backend
+    networks:
+      - proxy-network
 
   livekit:
     image: livekit/livekit-server:latest
@@ -45,3 +45,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  proxy-network:
+    external: true
