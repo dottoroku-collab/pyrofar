@@ -20,8 +20,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             # Pastikan folder target ada
-            mkdir -p /opt/pyrofar
-            cd /opt/pyrofar
+            mkdir -p ~/pyrofar
+            cd ~/pyrofar
             
             # Clone repo jika belum ada, atau pull jika sudah ada
             if [ ! -d ".git" ]; then
