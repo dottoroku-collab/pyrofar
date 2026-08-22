@@ -6,8 +6,11 @@ from app.models.armada import Armada
 from app.models.armada_file import ArmadaFile, JenisFileArmada
 from app.models.pemeliharaan import Pemeliharaan
 from app.schemas.public import PublicArmada, PublicServisTerakhir
+from uuid import UUID
+from app.schemas.insiden import InsidenCreate, InsidenResponse
+from app.services import insiden_service
 
-router = APIRouter(prefix="/public", tags=["Publik (QR Code)"])
+router = APIRouter(prefix="/public", tags=["Publik"])
 
 
 @router.get("/armada/{qr_code_value}", response_model=PublicArmada)
@@ -50,3 +53,8 @@ def get_public_armada(qr_code_value: str, db: Session = Depends(get_db)):
         foto_url=foto.file_url if foto else None,
         servis_terakhir=servis_terakhir,
     )
+
+@router.post("/lapor-insiden/{tenant_id}", response_model=InsidenResponse, status_code=status.HTTP_201_CREATED)
+def public_create_insiden(tenant_id: UUID, insiden_in: InsidenCreate, db: Session = Depends(get_db)):
+    insiden_in.is_verified = False
+    return insiden_service.create_insiden(db, tenant_id, insiden_in)

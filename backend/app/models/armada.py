@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     func,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -40,6 +41,7 @@ class Armada(Base):
     __tablename__ = "armada"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
     kode_armada = Column(String(50), nullable=False, index=True)
     nama_armada = Column(String(150), nullable=True)
     jenis_kendaraan_id = Column(Integer, ForeignKey("jenis_kendaraan.id"), nullable=False)

@@ -1,4 +1,12 @@
-export type UserRole = "administrator" | "pimpinan" | "kabid" | "operator" | "teknisi";
+export type UserRole = 
+  | "administrator" 
+  | "pimpinan" 
+  | "operator_cc" 
+  | "operator_lapangan_damkar" 
+  | "operator_lapangan_penyelamatan" 
+  | "operator_sarpras" 
+  | "teknisi" 
+  | "operator_pencegahan";
 
 export interface UserAdmin {
   id: number;

@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user, require_permission
+from app.dependencies.tenant import TenantContext, get_tenant_context
 from app.models.user import User, UserRole
 from app.schemas.license import (
     LicenseActivateRequest,
@@ -23,8 +24,10 @@ router = APIRouter(
 )
 def get_license(
     db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _: User = Depends(get_current_user),
 ):
-    return license_service.get_license_status(db)
+    return license_service.get_license_status(db, ctx.tenant_id)
 
 
 @router.post(
@@ -34,20 +37,11 @@ def get_license(
 def activate_license(
     payload: LicenseActivateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_license")),
 ):
-    if current_user.role != UserRole.administrator:
-        from fastapi import HTTPException, status
-
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=(
-                "Hanya Administrator yang dapat "
-                "mengaktifkan lisensi"
-            ),
-        )
-
     return license_service.activate_license(
         db,
+        ctx.tenant_id,
         payload.license_key,
     )

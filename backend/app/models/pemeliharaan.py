@@ -14,6 +14,7 @@ from sqlalchemy import (
     Text,
     func,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -28,6 +29,7 @@ class Pemeliharaan(Base):
     __tablename__ = "pemeliharaan"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
     armada_id = Column(BigInteger, ForeignKey("armada.id"), nullable=False, index=True)
     tanggal = Column(Date, nullable=False)
     jenis_kendala = Column(String(150), nullable=True)

@@ -4,8 +4,8 @@ import type { AppSettings } from "@/types/settings";
 
 const DEFAULT_SETTINGS: AppSettings = {
   id: 0,
-  app_name: "SIM Armada Damkar",
-  app_short_name: "SIM Armada",
+  app_name: "PYROFAR - Integrated Fire & Rescue Operations Platform",
+  app_short_name: "PYROFAR",
   organization_name: "Dinas Pemadam Kebakaran & Penyelamatan",
   region_name: "Kota Makassar",
   logo_url: null,
@@ -14,6 +14,12 @@ const DEFAULT_SETTINGS: AppSettings = {
   contact_email: null,
   contact_phone: null,
   address: null,
+  latitude: null,
+  longitude: null,
+  personnel_count: null,
+  dashboard_video_url: null,
+  dashboard_image_url: null,
+  dashboard_running_text: null,
 };
 
 let cachedSettings: AppSettings | null = null;

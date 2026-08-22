@@ -1,6 +1,7 @@
 import enum
 
 from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -20,6 +21,7 @@ class ArmadaFile(Base):
     __tablename__ = "armada_file"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
     armada_id = Column(BigInteger, ForeignKey("armada.id"), nullable=False, index=True)
     jenis_file = Column(Enum(JenisFileArmada, name="jenis_file_armada_enum"), nullable=False)
     file_url = Column(String(500), nullable=False)

@@ -1,4 +1,5 @@
 from sqlalchemy import BigInteger, Boolean, Column, Date, ForeignKey, Integer, Numeric, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -8,6 +9,7 @@ class Sparepart(Base):
     __tablename__ = "sparepart"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
     pemeliharaan_id = Column(BigInteger, ForeignKey("pemeliharaan.id"), nullable=False, index=True)
     nama_sparepart = Column(String(150), nullable=False)
     merk = Column(String(100), nullable=True)

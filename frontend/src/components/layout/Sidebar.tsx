@@ -8,108 +8,155 @@ import {
   SettingOutlined,
   ToolOutlined,
   UserOutlined,
+  SafetyCertificateOutlined,
+  CloudServerOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "@/store/authStore";
-import { colors } from "@/theme/antdTheme";
 import { getAssetUrl } from "@/api/client";
-import { useAppSettings } from "@/hooks/useAppSettings";
+import { useTenantStore } from "@/store/tenantStore";
+import { useTokens } from "@/store/themeStore";
 import { useLicense } from "@/hooks/useLicense";
 
-const ALL_ITEMS = [
+import type { MenuProps } from "antd";
+
+interface NavItem {
+  key: string;
+  icon?: React.ReactNode;
+  label: string;
+  roles?: string[];
+  feature?: string;
+  children?: NavItem[];
+}
+
+const NAV_STRUCTURE: NavItem[] = [
   {
-    key: "/dashboard",
+    key: "core",
     icon: <AppstoreOutlined />,
-    label: "Dashboard",
-    roles: ["administrator", "pimpinan", "kabid"],
-    feature: "dashboard",
+    label: "CORE",
+    children: [
+      { key: "/dashboard", label: "Command Center", roles: ["administrator", "pimpinan"], feature: "dashboard" },
+      { key: "/notifications", label: "Notifications" },
+      { key: "/profile", label: "Profile" },
+    ],
   },
   {
-    key: "/armada",
+    key: "operations",
     icon: <CarOutlined />,
-    label: "Data Armada",
-    roles: ["administrator", "operator", "teknisi", "pimpinan", "kabid"],
-    feature: "armada",
+    label: "OPERATIONS",
+    children: [
+      { key: "/dashboard/operasi", label: "Dashboard", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar", "operator_lapangan_penyelamatan"] },
+      { key: "/incidents", label: "Incidents", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar"] },
+      { key: "/rescue", label: "Rescue", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_penyelamatan"] },
+      { key: "/organizations", label: "Org Structure", roles: ["administrator", "pimpinan"] },
+      { key: "/personnel", label: "Personnel", roles: ["administrator", "operator_cc", "pimpinan"] },
+    ],
   },
   {
-    key: "/pemeliharaan",
-    icon: <ToolOutlined />,
-    label: "Pemeliharaan",
-    roles: ["administrator", "teknisi"],
-    feature: "pemeliharaan",
-  },
-  {
-    key: "/approval",
+    key: "prevention",
     icon: <CheckSquareOutlined />,
-    label: "Approval",
-    roles: ["kabid"],
-    feature: "approval",
+    label: "PREVENTION",
+    children: [
+      { key: "/dashboard/pencegahan", label: "Dashboard", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
+      { key: "/inspections", label: "Inspections", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
+      { key: "/buildings", label: "Buildings" },
+      { key: "/education", label: "Education", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
+      { key: "/certificates", label: "Certificates" },
+    ],
   },
   {
-    key: "/master-data",
+    key: "sarpras",
     icon: <DatabaseOutlined />,
-    label: "Master Data",
-    roles: ["administrator"],
-    // Master data usually accessible by admin always, but tying to dashboard or generally available if needed
+    label: "SARPRAS",
+    children: [
+      { key: "/dashboard/sarpras", label: "Dashboard", roles: ["administrator", "operator_sarpras", "teknisi", "pimpinan"], feature: "dashboard" },
+      { key: "/armada", label: "Armada", roles: ["administrator", "operator_sarpras", "teknisi", "pimpinan"], feature: "armada" },
+      { key: "/maintenance", label: "Maintenance", roles: ["administrator", "teknisi"], feature: "pemeliharaan" },
+      { key: "/equipment", label: "Equipment" },
+      { key: "/assets", label: "Assets" },
+      { key: "/stations", label: "Stations" },
+      { key: "/inventory", label: "Inventory" },
+    ],
   },
   {
-    key: "/laporan",
-    icon: <FileTextOutlined />,
-    label: "Laporan",
-    roles: ["administrator", "pimpinan", "kabid"],
-    feature: "laporan",
-  },
-  {
-    key: "/audit-log",
-    icon: <HistoryOutlined />,
-    label: "Audit Log",
-    roles: ["administrator"],
-    feature: "audit_log",
-  },
-  {
-    key: "/pengguna",
+    key: "redkar",
     icon: <UserOutlined />,
-    label: "Pengguna",
-    roles: ["administrator"],
-    // System feature, no license needed typically
+    label: "RELAWAN DAMKAR",
+    children: [
+      { key: "/relawan", label: "Dashboard", roles: ["administrator", "pimpinan"] },
+      { key: "/relawan/training", label: "Training" },
+      { key: "/relawan/communities", label: "Communities" },
+    ],
   },
   {
-    key: "/pengaturan",
-    icon: <SettingOutlined />,
-    label: "Pengaturan",
-    roles: ["administrator"],
-    // Always accessible to manage license
+    key: "analytics",
+    icon: <AppstoreOutlined />,
+    label: "ANALYTICS",
+    children: [
+      { key: "/analytics", label: "Analytics", roles: ["administrator", "pimpinan"] },
+      { key: "/reports", label: "Reports", roles: ["administrator", "pimpinan"], feature: "laporan" },
+    ],
+  },
+  {
+    key: "admin",
+    icon: <UserOutlined />,
+    label: "ADMIN",
+    children: [
+      { key: "/users", label: "Users", roles: ["administrator"] },
+      { key: "/roles", label: "Roles", roles: ["administrator", "pimpinan"] },
+      { key: "/subscription", label: "Subscription", roles: ["administrator"] },
+      { key: "/settings", label: "Settings", roles: ["administrator"] },
+      { key: "/audit-log", label: "Audit Log", roles: ["administrator"], feature: "audit_log" },
+    ],
   },
 ];
 
-
+function filterNavItems(items: NavItem[], role: string | undefined, hasFeature: (f: string) => boolean): any[] {
+  return items
+    .filter((item) => {
+      const hasRole = !item.roles || !role || item.roles.includes(role);
+      const isFeatureAllowed = !item.feature || hasFeature(item.feature);
+      return hasRole && isFeatureAllowed;
+    })
+    .map((item) => {
+      if (item.children) {
+        const filteredChildren = filterNavItems(item.children, role, hasFeature);
+        if (filteredChildren.length === 0) return null; // Hide parent if no children visible
+        return {
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+          children: filteredChildren,
+        };
+      }
+      return {
+        key: item.key,
+        icon: item.icon,
+        label: item.label,
+      };
+    })
+    .filter(Boolean);
+}
 
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const role = useAuthStore((s) => s.user?.role);
-  const { settings } = useAppSettings();
+  const { settings } = useTenantStore();
+  const tokens = useTokens();
   const { hasFeature } = useLicense();
 
-  const items = ALL_ITEMS
-    .filter((item) => {
-      const hasRole = !role || item.roles.includes(role);
-      const isFeatureAllowed = !item.feature || hasFeature(item.feature);
-      return hasRole && isFeatureAllowed;
-    })
-    .map((item) => ({
-      key: item.key,
-      icon: item.icon,
-      label: item.label,
-    }));
+  if (!settings) return null;
+
+  const items = filterNavItems(NAV_STRUCTURE, role, hasFeature);
 
   const selectedKey =
     location.pathname === "/pemeliharaan/new"
       ? "/pemeliharaan"
-      : location.pathname.startsWith("/pengaturan")
+      : location.pathname.startsWith("/pengaturan") && location.pathname !== "/pengaturan" && location.pathname !== "/roles-permissions" && location.pathname !== "/subscription"
         ? "/pengaturan"
         : location.pathname;
 
@@ -162,7 +209,7 @@ export default function Sidebar() {
               width: 40,
               height: 40,
               borderRadius: 8,
-              background: colors.redPrimary,
+              background: tokens.primary,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -218,7 +265,7 @@ export default function Sidebar() {
           margin: "0 20px 12px",
           borderRadius: 2,
           background:
-            "repeating-linear-gradient(-45deg, #C0272D 0 8px, #000 8px 10px, #15171B 10px 18px)",
+            `repeating-linear-gradient(-45deg, ${tokens.primary} 0 8px, ${tokens.sidebarBg} 8px 10px, ${tokens.sidebarBorder} 10px 18px)`,
         }}
       />
 

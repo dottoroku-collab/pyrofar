@@ -1,17 +1,22 @@
+from uuid import UUID
+
 from pydantic import BaseModel, EmailStr
 
 from app.models.user import UserRole
 
 
+from typing import Optional
+
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 
 class UserPublic(BaseModel):
     id: int
+    tenant_id: UUID
     nama: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
     role: UserRole
 
     class Config:

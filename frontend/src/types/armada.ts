@@ -35,6 +35,14 @@ export interface ArmadaPublic extends ArmadaListItem {
   created_at: string;
 }
 
+export interface ArmadaFile {
+  id: number;
+  armada_id: number;
+  jenis_file: string;
+  file_url: string;
+  uploaded_at: string;
+}
+
 export interface ArmadaPayload {
   kode_armada: string;
   nama_armada?: string | null;

@@ -9,11 +9,13 @@ from app.services import audit_service
 from app.utils.qr_generator import generate_qr_code_value
 
 
-def _ensure_unique(db: Session, field_name: str, value: str | None, exclude_id: int | None = None):
+def _ensure_unique(db: Session, tenant_id: str, field_name: str, value: str | None, exclude_id: int | None = None):
     if not value:
         return
     query = db.query(Armada).filter(
-        getattr(Armada, field_name) == value, Armada.is_deleted.is_(False)
+        Armada.tenant_id == tenant_id,
+        getattr(Armada, field_name) == value,
+        Armada.is_deleted.is_(False)
     )
     if exclude_id:
         query = query.filter(Armada.id != exclude_id)
@@ -24,13 +26,14 @@ def _ensure_unique(db: Session, field_name: str, value: str | None, exclude_id: 
         )
 
 
-def create_armada(db: Session, payload: ArmadaCreate, current_user: User) -> Armada:
-    _ensure_unique(db, "kode_armada", payload.kode_armada)
-    _ensure_unique(db, "no_polisi", payload.no_polisi)
-    _ensure_unique(db, "no_lambung", payload.no_lambung)
+def create_armada(db: Session, payload: ArmadaCreate, current_user: User, tenant_id: str) -> Armada:
+    _ensure_unique(db, tenant_id, "kode_armada", payload.kode_armada)
+    _ensure_unique(db, tenant_id, "no_polisi", payload.no_polisi)
+    _ensure_unique(db, tenant_id, "no_lambung", payload.no_lambung)
 
     armada = Armada(
         **payload.model_dump(),
+        tenant_id=tenant_id,
         qr_code_value=generate_qr_code_value(payload.kode_armada),
         status_armada=StatusArmada.standby,
         status_approval=ApprovalStatus.tidak_perlu,
@@ -50,11 +53,11 @@ def create_armada(db: Session, payload: ArmadaCreate, current_user: User) -> Arm
 def update_armada(db: Session, armada: Armada, payload: ArmadaUpdate, current_user: User) -> Armada:
     data = payload.model_dump(exclude_unset=True)
     if "kode_armada" in data:
-        _ensure_unique(db, "kode_armada", data["kode_armada"], exclude_id=armada.id)
+        _ensure_unique(db, armada.tenant_id, "kode_armada", data["kode_armada"], exclude_id=armada.id)
     if "no_polisi" in data:
-        _ensure_unique(db, "no_polisi", data["no_polisi"], exclude_id=armada.id)
+        _ensure_unique(db, armada.tenant_id, "no_polisi", data["no_polisi"], exclude_id=armada.id)
     if "no_lambung" in data:
-        _ensure_unique(db, "no_lambung", data["no_lambung"], exclude_id=armada.id)
+        _ensure_unique(db, armada.tenant_id, "no_lambung", data["no_lambung"], exclude_id=armada.id)
 
     for key, value in data.items():
         setattr(armada, key, value)

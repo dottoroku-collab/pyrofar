@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "880413210421",
+    "project_id": "pyrofar-app",
+    "storage_bucket": "pyrofar-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880413210421:android:3717fee58d19b3244c7e7c",
+        "android_client_info": {
+          "package_name": "com.pyrofar.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzWAFtWNs-vVn6h7_YshcKwfkzGvvJH4s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880413210421:android:6ca96e1b653c1be44c7e7c",
+        "android_client_info": {
+          "package_name": "id.go.makassar.damkar.sim_armada_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzWAFtWNs-vVn6h7_YshcKwfkzGvvJH4s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

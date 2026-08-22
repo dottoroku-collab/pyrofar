@@ -1,4 +1,5 @@
-from sqlalchemy import Column, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Float, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -7,17 +8,20 @@ class AppSettings(Base):
     __tablename__ = "app_settings"
 
     id = Column(Integer, primary_key=True)
+    # tenant_id added in migration 0009 for multi-tenant support.
+    # app_settings is a legacy table; tenant_settings is the canonical source from Phase 1.
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
 
     app_name = Column(
         String(150),
         nullable=False,
-        default="SIM Armada Damkar",
+        default="PYROFAR",
     )
 
     app_short_name = Column(
         String(50),
         nullable=False,
-        default="SIM Armada",
+        default="PYROFAR",
     )
 
     organization_name = Column(
@@ -60,6 +64,71 @@ class AppSettings(Base):
     address = Column(
         Text,
         nullable=True,
+    )
+
+    personnel_count = Column(
+        Integer,
+        nullable=True,
+    )
+
+    latitude = Column(
+        Float,
+        nullable=True,
+    )
+
+    longitude = Column(
+        Float,
+        nullable=True,
+    )
+
+    dashboard_video_url = Column(
+        String(500),
+        nullable=True,
+    )
+
+    dashboard_image_url = Column(
+        String(500),
+        nullable=True,
+    )
+
+    dashboard_running_text = Column(
+        Text,
+        nullable=True,
+    )
+
+    # WhatsApp Gateway Settings
+    wa_enabled = Column(
+        Boolean,
+        nullable=False,
+        default=True,
+    )
+
+    wa_provider = Column(
+        String(50),
+        nullable=False,
+        default="fonnte",
+    )
+
+    wa_api_token = Column(
+        String(255),
+        nullable=True,
+    )
+
+    wa_api_url = Column(
+        String(255),
+        nullable=True,
+        default="https://api.fonnte.com/send",
+    )
+
+    wa_siaga_target = Column(
+        Text,
+        nullable=True,
+    )
+
+    wa_instance_name = Column(
+        String(100),
+        nullable=True,
+        default="sim-armada",
     )
 
     created_at = Column(

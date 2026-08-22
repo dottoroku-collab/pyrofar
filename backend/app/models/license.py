@@ -1,6 +1,8 @@
 from datetime import datetime
+from uuid import UUID as PythonUUID
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -10,6 +12,13 @@ class License(Base):
     __tablename__ = "licenses"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    tenant_id: Mapped[PythonUUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("tenants.id"),
+        nullable=False,
+        index=True,
+    )
 
     license_key: Mapped[str] = mapped_column(
         String(2048),

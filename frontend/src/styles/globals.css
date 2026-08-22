@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-family-base: 'Inter', sans-serif;
+  
+  /* Shared values */
+  --border-radius-card: 16px;
+  --border-radius-button: 8px;
+  --transition-speed: 0.3s;
+}
+
+/* Light Theme Variables */
+body[data-theme='light'] {
+  --bg-app: #F4F5F7;
+  --bg-card: #FFFFFF;
+  --text-primary: #1A1D23;
+  --text-secondary: #6B7280;
+  --border-color: #E4E6EB;
+  
+  /* Glass effects */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark Theme Variables */
+body[data-theme='dark'] {
+  --bg-app: #0F1117;
+  --bg-card: #1A1D23;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --border-color: #2D3139;
+
+  /* Dark Navy / Graphite */
+  --glass-bg: rgba(26, 29, 35, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+body {
+  font-family: var(--font-family-base);
+  margin: 0;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--border-radius-card);
+}
+
+/* Micro Interactions */
+.hover-lift {
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme='dark'] .hover-lift:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.status-indicator.success { background: rgba(5, 150, 105, 0.1); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-indicator.warning { background: rgba(217, 119, 6, 0.1); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-indicator.error { background: rgba(192, 39, 45, 0.1); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.status-indicator.info { background: rgba(59, 130, 246, 0.1); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.status-indicator.default { background: rgba(107, 114, 128, 0.1); color: #9CA3AF; border: 1px solid rgba(156, 163, 175, 0.2); }
+
+/* Animations */
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Map Placeholder Pattern */
+.map-placeholder-bg {
+  background-color: var(--bg-card);
+  background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Clean Tables overrides */
+.ant-table-wrapper .ant-table {
+  background: transparent;
+}
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background: transparent !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: rgba(156, 163, 175, 0.05) !important;
+}
+
+/* Custom Gradients for Dashboard Cards */
+.gradient-card-1 { background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%); color: white; }
+.gradient-card-2 { background: linear-gradient(135deg, #1E1B4B 0%, #4C1D95 100%); color: white; }
+.gradient-card-3 { background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%); color: white; }
+.gradient-card-4 { background: linear-gradient(135deg, #064E3B 0%, #065F46 100%); color: white; }
+
+/* Map Dark Mode */
+body[data-theme='dark'] .leaflet-layer,
+body[data-theme='dark'] .leaflet-control-zoom-in,
+body[data-theme='dark'] .leaflet-control-zoom-out,
+body[data-theme='dark'] .leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .ant-layout-sider {
+    display: none !important;
+  }
+  .ant-layout-header {
+    display: none !important;
+  }
+  .ant-card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  body {
+    background-color: white !important;
+  }
+}

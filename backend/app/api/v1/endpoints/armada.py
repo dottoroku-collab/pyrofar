@@ -3,7 +3,8 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user, require_role, require_feature
+from app.dependencies.auth import get_current_user, require_role, require_feature, require_permission
+from app.dependencies.tenant import TenantContext, get_tenant_context
 from app.models.armada import Armada
 from app.models.armada_file import ArmadaFile, JenisFileArmada
 from app.models.histori_lokasi import HistoriLokasi
@@ -19,8 +20,12 @@ from app.utils.file_storage import save_upload
 router = APIRouter(prefix="/armada", tags=["Data Armada"])
 
 
-def _get_or_404(db: Session, armada_id: int) -> Armada:
-    armada = db.query(Armada).filter(Armada.id == armada_id, Armada.is_deleted.is_(False)).first()
+def _get_or_404(db: Session, tenant_id: str, armada_id: int) -> Armada:
+    armada = db.query(Armada).filter(
+        Armada.tenant_id == tenant_id,
+        Armada.id == armada_id,
+        Armada.is_deleted.is_(False)
+    ).first()
     if not armada:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Armada tidak ditemukan")
     return armada
@@ -35,9 +40,13 @@ def list_armada(
     page: int = 1,
     page_size: int = 20,
     db: Session = Depends(get_db),
-    _=Depends(get_current_user),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _=Depends(require_permission("view_armada")),
 ):
-    query = db.query(Armada).filter(Armada.is_deleted.is_(False))
+    query = db.query(Armada).filter(
+        Armada.tenant_id == ctx.tenant_id,
+        Armada.is_deleted.is_(False)
+    )
     if q:
         like = f"%{q}%"
         query = query.filter(
@@ -57,8 +66,6 @@ def list_armada(
 
     return (
         query.order_by(Armada.kode_armada)
-        .offset((page - 1) * page_size)
-        .limit(page_size)
         .all()
     )
 
@@ -67,30 +74,37 @@ def list_armada(
 def create_armada(
     payload: ArmadaCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_role([UserRole.administrator, UserRole.operator])
-    ),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_armada")),
 ):
     current_count = (
         db.query(Armada)
-        .filter(Armada.is_deleted.is_(False))
+        .filter(
+            Armada.tenant_id == ctx.tenant_id,
+            Armada.is_deleted.is_(False)
+        )
         .count()
     )
 
-    if not license_service.check_limit(db, "armada", current_count):
+    if not license_service.check_limit(db, ctx.tenant_id, "armada", current_count):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Batas jumlah armada pada lisensi Anda telah tercapai",
         )
 
-    armada = svc.create_armada(db, payload, current_user)
+    armada = svc.create_armada(db, payload, current_user, ctx.tenant_id)
     reminder_service.sinkronkan_jadwal_stnk(db, armada)
     return armada
 
 
 @router.get("/{armada_id}", response_model=ArmadaPublic, dependencies=[Depends(require_feature("armada"))])
-def get_armada(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    return _get_or_404(db, armada_id)
+def get_armada(
+    armada_id: int,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _=Depends(require_permission("view_armada"))
+):
+    return _get_or_404(db, ctx.tenant_id, armada_id)
 
 
 @router.put("/{armada_id}", response_model=ArmadaPublic, dependencies=[Depends(require_feature("armada"))])
@@ -98,17 +112,23 @@ def update_armada(
     armada_id: int,
     payload: ArmadaUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator, UserRole.operator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_armada")),
 ):
-    armada = _get_or_404(db, armada_id)
+    armada = _get_or_404(db, ctx.tenant_id, armada_id)
     updated = svc.update_armada(db, armada, payload, current_user)
     reminder_service.sinkronkan_jadwal_stnk(db, updated)
     return updated
 
 
 @router.get("/{armada_id}/timeline", response_model=list[TimelineItem], dependencies=[Depends(require_feature("armada"))])
-def get_timeline(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    _get_or_404(db, armada_id)
+def get_timeline(
+    armada_id: int,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _=Depends(require_permission("view_armada"))
+):
+    _get_or_404(db, ctx.tenant_id, armada_id)
     return timeline_service.get_timeline(db, armada_id)
 
 
@@ -116,15 +136,21 @@ def get_timeline(armada_id: int, db: Session = Depends(get_db), _=Depends(get_cu
 def delete_armada(
     armada_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator, UserRole.operator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_armada")),
 ):
-    armada = _get_or_404(db, armada_id)
+    armada = _get_or_404(db, ctx.tenant_id, armada_id)
     svc.soft_delete_armada(db, armada, current_user)
 
 
 @router.get("/{armada_id}/files", response_model=list[ArmadaFilePublic], dependencies=[Depends(require_feature("armada"))])
-def list_files(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    _get_or_404(db, armada_id)
+def list_files(
+    armada_id: int,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _=Depends(require_permission("view_armada"))
+):
+    _get_or_404(db, ctx.tenant_id, armada_id)
     return db.query(ArmadaFile).filter(ArmadaFile.armada_id == armada_id).all()
 
 
@@ -134,9 +160,10 @@ def upload_file(
     jenis_file: JenisFileArmada,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator, UserRole.operator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_armada")),
 ):
-    _get_or_404(db, armada_id)
+    _get_or_404(db, ctx.tenant_id, armada_id)
     file_url = save_upload(file, subfolder=f"armada/{armada_id}")
     armada_file = ArmadaFile(
         armada_id=armada_id, jenis_file=jenis_file, file_url=file_url, uploaded_by=current_user.id
@@ -152,8 +179,12 @@ def delete_file(
     armada_id: int,
     file_id: int,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(require_role([UserRole.administrator, UserRole.operator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _current_user: User = Depends(require_permission("manage_armada")),
 ):
+    # Verifikasi armada ini milik tenant
+    _get_or_404(db, ctx.tenant_id, armada_id)
+
     armada_file = (
         db.query(ArmadaFile)
         .filter(ArmadaFile.id == file_id, ArmadaFile.armada_id == armada_id)
@@ -170,15 +201,21 @@ def pindah_lokasi(
     armada_id: int,
     payload: PindahLokasiRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.operator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_armada")),
 ):
-    armada = _get_or_404(db, armada_id)
+    armada = _get_or_404(db, ctx.tenant_id, armada_id)
     return lokasi_service.pindah_lokasi(db, armada, payload, current_user)
 
 
 @router.get("/{armada_id}/histori-lokasi", response_model=list[HistoriLokasiPublic], dependencies=[Depends(require_feature("armada"))])
-def histori_lokasi(armada_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    _get_or_404(db, armada_id)
+def histori_lokasi(
+    armada_id: int,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _=Depends(require_permission("view_armada"))
+):
+    _get_or_404(db, ctx.tenant_id, armada_id)
     return (
         db.query(HistoriLokasi)
         .filter(HistoriLokasi.armada_id == armada_id)
@@ -192,7 +229,8 @@ def ubah_status(
     armada_id: int,
     payload: UbahStatusRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.operator, UserRole.teknisi])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("approve_armada")),
 ):
-    armada = _get_or_404(db, armada_id)
+    armada = _get_or_404(db, ctx.tenant_id, armada_id)
     return approval_service.ubah_status(db, armada, payload, current_user)

@@ -15,7 +15,7 @@ from app.models.user import UserRole
 
 router = APIRouter(prefix="/laporan", tags=["Laporan"])
 
-ALLOWED_ROLES = [UserRole.administrator, UserRole.pimpinan, UserRole.kabid]
+ALLOWED_ROLES = [UserRole.administrator, UserRole.pimpinan]
 
 HEADERS = ["Kode Armada", "Nama", "No. Polisi", "No. Lambung", "Status", "Tahun"]
 

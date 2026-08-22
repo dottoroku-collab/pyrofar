@@ -9,7 +9,7 @@ from app.services import analytics_service as svc
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
-ALLOWED_ROLES = [UserRole.administrator, UserRole.pimpinan, UserRole.kabid]
+ALLOWED_ROLES = [UserRole.administrator, UserRole.pimpinan]
 
 
 @router.get("/summary", response_model=DashboardSummary, dependencies=[Depends(require_feature("dashboard"))])

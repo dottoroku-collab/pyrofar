@@ -1,4 +1,5 @@
 from sqlalchemy import BigInteger, Column, Date, DateTime, ForeignKey, Integer, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -8,6 +9,7 @@ class HistoriLokasi(Base):
     __tablename__ = "histori_lokasi"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
     armada_id = Column(BigInteger, ForeignKey("armada.id"), nullable=False, index=True)
     lokasi_lama_id = Column(Integer, ForeignKey("lokasi.id"), nullable=True)
     lokasi_baru_id = Column(Integer, ForeignKey("lokasi.id"), nullable=False)

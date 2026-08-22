@@ -4,8 +4,8 @@ from app.models.app_settings import AppSettings
 
 
 DEFAULT_SETTINGS = {
-    "app_name": "SIM Armada Damkar",
-    "app_short_name": "SIM Armada",
+    "app_name": "PYROFAR - Integrated Fire & Rescue Operations Platform",
+    "app_short_name": "PYROFAR",
     "organization_name": "Dinas Pemadam Kebakaran & Penyelamatan",
     "region_name": "Kota Makassar",
     "logo_url": None,

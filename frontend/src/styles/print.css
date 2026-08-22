@@ -1,0 +1,50 @@
+/* Print styles to hide sidebar, topbar, and only show the table content */
+
+@media print {
+  /* Hide unnecessary layout elements */
+  .ant-layout-sider,
+  .ant-layout-header,
+  .ant-menu,
+  button,
+  .ant-btn,
+  .ant-input-affix-wrapper,
+  .ant-select,
+  .ant-pagination,
+  .hide-on-print {
+    display: none !important;
+  }
+
+  /* Reset layout margins/paddings for print */
+  .ant-layout,
+  .ant-layout-content,
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  /* Ensure the table expands to full width and looks clean */
+  .ant-table-wrapper,
+  .ant-table,
+  .ant-table-container,
+  .ant-table-content {
+    width: 100% !important;
+  }
+
+  /* Avoid page breaks inside table rows */
+  .ant-table-row {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure text colors are printed well */
+  * {
+    color: black !important;
+    box-shadow: none !important;
+  }
+
+  .ant-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

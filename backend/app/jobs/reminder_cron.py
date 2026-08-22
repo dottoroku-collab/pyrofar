@@ -18,4 +18,5 @@ def _job() -> None:
 def start_scheduler() -> None:
     """Dipanggil sekali saat aplikasi FastAPI start (lihat app/main.py)."""
     scheduler.add_job(_job, "cron", hour=6, minute=0, id="reminder_harian", replace_existing=True)
-    scheduler.start()
+    if not scheduler.running:
+        scheduler.start()

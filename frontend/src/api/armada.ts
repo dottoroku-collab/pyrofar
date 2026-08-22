@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client";
-import type { ArmadaListItem, ArmadaPayload, ArmadaPublic, HistoriLokasi, HistoriStatus, StatusArmada } from "@/types/armada";
+import type { ArmadaListItem, ArmadaPayload, ArmadaPublic, HistoriLokasi, HistoriStatus, StatusArmada, ArmadaFile } from "@/types/armada";
 
 export interface ArmadaFilters {
   q?: string;
@@ -19,6 +19,8 @@ export const armadaApi = {
   update: async (id: number, payload: Partial<ArmadaPayload>) =>
     (await apiClient.put<ArmadaPublic>(`/armada/${id}`, payload)).data,
   remove: async (id: number) => apiClient.delete(`/armada/${id}`),
+  listFiles: async (id: number) =>
+    (await apiClient.get<ArmadaFile[]>(`/armada/${id}/files`)).data,
   uploadFile: async (id: number, jenisFile: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);

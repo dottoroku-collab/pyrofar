@@ -25,6 +25,8 @@ class JenisKendaraanPublic(JenisKendaraanBase):
 class LokasiBase(BaseModel):
     nama: str
     deskripsi: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class LokasiCreate(LokasiBase):
@@ -34,6 +36,8 @@ class LokasiCreate(LokasiBase):
 class LokasiUpdate(BaseModel):
     nama: str | None = None
     deskripsi: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class LokasiPublic(LokasiBase):

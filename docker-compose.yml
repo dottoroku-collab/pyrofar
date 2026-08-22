@@ -25,6 +25,8 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://backend:8000
     ports:
       - "5173:5173"
     volumes:
@@ -32,6 +34,14 @@ services:
       - /app/node_modules
     depends_on:
       - backend
+
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --dev --bind 0.0.0.0
+    restart: unless-stopped
+    ports:
+      - "7880:7880"
+      - "7881-7882:7881-7882/udp"
 
 volumes:
   postgres_data:

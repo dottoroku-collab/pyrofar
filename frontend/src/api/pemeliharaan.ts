@@ -4,6 +4,8 @@ import type { Pemeliharaan, PemeliharaanPayload, TimelineItem } from "@/types/pe
 export const pemeliharaanApi = {
   list: async (armadaId?: number) =>
     (await apiClient.get<Pemeliharaan[]>("/pemeliharaan", { params: { armada_id: armadaId } })).data,
+  get: async (id: number) =>
+    (await apiClient.get<Pemeliharaan>(`/pemeliharaan/${id}`)).data,
   create: async (payload: PemeliharaanPayload) =>
     (await apiClient.post<Pemeliharaan>("/pemeliharaan", payload)).data,
   update: async (id: number, payload: Partial<PemeliharaanPayload>) =>

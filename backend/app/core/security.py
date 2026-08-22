@@ -17,7 +17,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def _create_token(subject: str, role: str, expires_delta: timedelta, token_type: str) -> str:
+def _create_token(
+    subject: str,
+    role: str,
+    expires_delta: timedelta,
+    token_type: str,
+    tenant_id: str | None = None,
+) -> str:
     now = datetime.now(timezone.utc)
     payload: dict[str, Any] = {
         "sub": subject,
@@ -26,24 +32,28 @@ def _create_token(subject: str, role: str, expires_delta: timedelta, token_type:
         "iat": now,
         "exp": now + expires_delta,
     }
+    if tenant_id:
+        payload["tid"] = tenant_id  # tenant claim — informational, not authoritative
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
-def create_access_token(user_id: int, role: str) -> str:
+def create_access_token(user_id: int, role: str, tenant_id: str | None = None) -> str:
     return _create_token(
         subject=str(user_id),
         role=role,
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
         token_type="access",
+        tenant_id=tenant_id,
     )
 
 
-def create_refresh_token(user_id: int, role: str) -> str:
+def create_refresh_token(user_id: int, role: str, tenant_id: str | None = None) -> str:
     return _create_token(
         subject=str(user_id),
         role=role,
         expires_delta=timedelta(minutes=settings.refresh_token_expire_minutes),
         token_type="refresh",
+        tenant_id=tenant_id,
     )
 
 

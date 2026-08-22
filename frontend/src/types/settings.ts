@@ -20,6 +20,18 @@ export interface AppSettings {
   contact_phone: string | null;
 
   address: string | null;
+  
+  personnel_count: number | null;
+
+  latitude: number | null;
+
+  longitude: number | null;
+
+  dashboard_video_url: string | null;
+
+  dashboard_image_url: string | null;
+
+  dashboard_running_text: string | null;
 }
 
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.core.database import get_db
 from app.core.rate_limit import limiter
@@ -24,9 +25,17 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     user = (
         db.query(User)
-        .filter(User.email == payload.email, User.is_deleted.is_(False))
+        .filter(
+            or_(User.email == payload.email, User.username == payload.email),
+            User.is_deleted.is_(False)
+        )
         .first()
     )
+    if not user:
+        print(f"DEBUG: User not found for email: '{payload.email}'")
+    elif not verify_password(payload.password, user.password_hash):
+        print(f"DEBUG: Password mismatch for email: '{payload.email}'. Provided password: '{payload.password}'")
+
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,10 +47,16 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
             detail="Akun tidak aktif, hubungi Administrator",
         )
 
-    access_token = create_access_token(user.id, user.role.value)
-    refresh_token = create_refresh_token(user.id, user.role.value)
+    tenant_id_str = str(user.tenant_id) if user.tenant_id else None
+    access_token = create_access_token(user.id, user.role.value, tenant_id=tenant_id_str)
+    refresh_token = create_refresh_token(user.id, user.role.value, tenant_id=tenant_id_str)
 
-    audit_service.catat(db, user.id, AuditAksi.login, "auth", user.id)
+    audit_service.catat(
+        db, user.id, AuditAksi.login, "auth", user.id,
+        tenant_id=user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
 
     return TokenResponse(
         access_token=access_token,
@@ -59,7 +74,7 @@ def token(
     user = (
         db.query(User)
         .filter(
-            User.email == form_data.username,
+            or_(User.email == form_data.username, User.username == form_data.username),
             User.is_deleted.is_(False),
         )
         .first()
@@ -81,15 +96,9 @@ def token(
             detail="Akun tidak aktif, hubungi Administrator",
         )
 
-    access_token = create_access_token(
-        user.id,
-        user.role.value,
-    )
-
-    refresh_token = create_refresh_token(
-        user.id,
-        user.role.value,
-    )
+    tenant_id_str = str(user.tenant_id) if user.tenant_id else None
+    access_token = create_access_token(user.id, user.role.value, tenant_id=tenant_id_str)
+    refresh_token = create_refresh_token(user.id, user.role.value, tenant_id=tenant_id_str)
 
     audit_service.catat(
         db,
@@ -97,6 +106,9 @@ def token(
         AuditAksi.login,
         "auth",
         user.id,
+        tenant_id=user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
     )
 
     return TokenResponse(
@@ -118,8 +130,9 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)):
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Akun tidak ditemukan")
 
-    access_token = create_access_token(user.id, user.role.value)
-    new_refresh_token = create_refresh_token(user.id, user.role.value)
+    tenant_id_str = str(user.tenant_id) if user.tenant_id else None
+    access_token = create_access_token(user.id, user.role.value, tenant_id=tenant_id_str)
+    new_refresh_token = create_refresh_token(user.id, user.role.value, tenant_id=tenant_id_str)
 
     return TokenResponse(
         access_token=access_token,

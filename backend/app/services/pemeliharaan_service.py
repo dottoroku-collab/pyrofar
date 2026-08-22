@@ -10,15 +10,23 @@ from app.schemas.pemeliharaan import PemeliharaanCreate, PemeliharaanUpdate
 from app.services import audit_service
 
 
-def create_pemeliharaan(db: Session, payload: PemeliharaanCreate, current_user: User) -> Pemeliharaan:
+def create_pemeliharaan(db: Session, payload: PemeliharaanCreate, current_user: User, tenant_id: str) -> Pemeliharaan:
     armada = (
-        db.query(Armada).filter(Armada.id == payload.armada_id, Armada.is_deleted.is_(False)).first()
+        db.query(Armada).filter(
+            Armada.tenant_id == tenant_id,
+            Armada.id == payload.armada_id,
+            Armada.is_deleted.is_(False)
+        ).first()
     )
     if not armada:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Armada tidak ditemukan")
 
     data = payload.model_dump(exclude={"sparepart"})
-    pemeliharaan = Pemeliharaan(**data, input_oleh=current_user.id)
+    pemeliharaan = Pemeliharaan(
+        **data,
+        tenant_id=tenant_id,
+        input_oleh=current_user.id
+    )
     db.add(pemeliharaan)
     db.flush()  # dapatkan id sebelum commit, untuk sparepart anak
 

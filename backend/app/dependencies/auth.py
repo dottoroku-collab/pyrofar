@@ -51,6 +51,31 @@ def require_role(allowed_roles: list[UserRole]):
 
     return _checker
 
+
+def require_permission(required_permission: str):
+    """Dependency factory: batasi endpoint berdasarkan permission granular."""
+
+    def _checker(current_user: User = Depends(get_current_user)) -> User:
+        from app.core.permissions import has_permission, Permission
+
+        try:
+            perm_enum = Permission(required_permission)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Permission {required_permission} tidak dikenal di sistem",
+            )
+
+        if not has_permission(current_user.role, perm_enum):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Anda tidak memiliki izin (permission) untuk aksi ini",
+            )
+        return current_user
+
+    return _checker
+
+
 def require_feature(feature_code: str):
     """Dependency factory: batasi endpoint berdasarkan feature license."""
 
@@ -58,7 +83,7 @@ def require_feature(feature_code: str):
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user),
     ) -> User:
-        if not license_service.has_feature(db, feature_code):
+        if not license_service.has_feature(db, current_user.tenant_id, feature_code):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Feature '{feature_code}' tidak tersedia pada lisensi ini",

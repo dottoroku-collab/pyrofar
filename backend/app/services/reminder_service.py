@@ -30,7 +30,7 @@ def cek_dan_kirim_reminder(db: Session) -> int:
             f"Armada {armada.kode_armada}: {jadwal.jenis_reminder.value} "
             f"jatuh tempo {jadwal.tanggal_jatuh_tempo} ({status_waktu})"
         )
-        for role in (UserRole.administrator, UserRole.operator, UserRole.teknisi):
+        for role in (UserRole.administrator, UserRole.operator_sarpras, UserRole.teknisi):
             notifikasi_service.notify_users_by_role(
                 db, role, jenis="reminder", pesan=pesan, armada_id=armada.id
             )

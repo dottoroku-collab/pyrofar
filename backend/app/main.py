@@ -9,9 +9,11 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.jobs.reminder_cron import start_scheduler
-
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title=settings.app_name)
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 app.mount(
     "/uploads",
@@ -27,7 +29,7 @@ app.add_exception_handler(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

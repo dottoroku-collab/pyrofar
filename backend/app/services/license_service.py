@@ -107,11 +107,15 @@ def _serialize_license(license: License) -> dict:
 
 def get_active_license(
     db: Session,
+    tenant_id: str,
 ) -> License | None:
 
     license = (
         db.query(License)
-        .filter(License.is_active.is_(True))
+        .filter(
+            License.tenant_id == tenant_id,
+            License.is_active.is_(True)
+        )
         .order_by(License.id.desc())
         .first()
     )
@@ -129,8 +133,8 @@ def get_active_license(
     return license
 
 
-def get_license_status(db: Session) -> dict:
-    license = get_active_license(db)
+def get_license_status(db: Session, tenant_id: str) -> dict:
+    license = get_active_license(db, tenant_id)
 
     if not license:
         return {
@@ -146,6 +150,7 @@ def get_license_status(db: Session) -> dict:
 
 def activate_license(
     db: Session,
+    tenant_id: str,
     license_key: str,
 ) -> dict:
     license_key = license_key.strip()
@@ -207,7 +212,10 @@ def activate_license(
     # 4. Cek license_id yang mungkin sudah terdaftar
     existing = (
         db.query(License)
-        .filter(License.license_id == payload["license_id"])
+        .filter(
+            License.tenant_id == tenant_id,
+            License.license_id == payload["license_id"]
+        )
         .first()
     )
 
@@ -224,6 +232,7 @@ def activate_license(
         (
             db.query(License)
             .filter(
+                License.tenant_id == tenant_id,
                 License.id != existing.id,
                 License.is_active.is_(True),
             )
@@ -247,7 +256,10 @@ def activate_license(
     # 5. Nonaktifkan license aktif sebelumnya
     (
         db.query(License)
-        .filter(License.is_active.is_(True))
+        .filter(
+            License.tenant_id == tenant_id,
+            License.is_active.is_(True)
+        )
         .update(
             {"is_active": False},
             synchronize_session=False,
@@ -256,6 +268,7 @@ def activate_license(
 
     # 6. Buat license baru dari payload yang sudah diverifikasi
     license = License(
+        tenant_id=tenant_id,
         license_key=license_key,
         license_id=payload["license_id"],
         plan_code=payload["plan_code"],
@@ -285,10 +298,11 @@ def activate_license(
 
 def has_feature(
     db: Session,
+    tenant_id: str,
     feature_code: str,
 ) -> bool:
 
-    license = get_active_license(db)
+    license = get_active_license(db, tenant_id)
 
     if not license:
         return False
@@ -300,10 +314,11 @@ def has_feature(
 
 def require_feature(
     db: Session,
+    tenant_id: str,
     feature_code: str,
 ) -> None:
 
-    if not has_feature(db, feature_code):
+    if not has_feature(db, tenant_id, feature_code):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=(
@@ -315,11 +330,12 @@ def require_feature(
 
 def check_limit(
     db: Session,
+    tenant_id: str,
     resource: str,
     current_count: int,
 ) -> bool:
 
-    license = get_active_license(db)
+    license = get_active_license(db, tenant_id)
 
     if not license:
         return False

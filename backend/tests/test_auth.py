@@ -3,7 +3,13 @@ from app.models.user import User, UserRole
 
 
 def _seed_user(db_session, email: str) -> User:
+    from app.models.tenant import Tenant
+    tenant = Tenant(name="Test Tenant", slug=f"test-{id(email)}")
+    db_session.add(tenant)
+    db_session.flush()
+
     user = User(
+        tenant_id=tenant.id,
         nama="Admin Test",
         email=email,
         password_hash=hash_password("Password123!"),

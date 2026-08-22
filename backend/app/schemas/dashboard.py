@@ -50,3 +50,41 @@ class RankingItem(BaseModel):
     kode_armada: str
     jumlah_pemeliharaan: int
     total_biaya: float
+
+
+# --- Incident Analytics ---
+
+class KPIInsiden(BaseModel):
+    total_insiden: int
+    insiden_aktif: int
+    insiden_selesai: int
+    unit_tersedia: int
+
+class InsidenPerKecamatan(BaseModel):
+    kecamatan: str
+    jumlah: int
+
+class InsidenPerJenis(BaseModel):
+    jenis: str
+    jumlah: int
+
+class TrenWaktuRespons(BaseModel):
+    waktu: str  # Format: "Jan", "Feb", etc. or Date string
+    rata_rata_menit: float
+
+class DistribusiPerJam(BaseModel):
+    jam: str  # Format "01:00", "02:00", etc.
+    jumlah: int
+
+class AIRecommendation(BaseModel):
+    title: str
+    description: str
+    type: str # 'warning', 'info', 'success'
+
+class IncidentAnalyticsResponse(BaseModel):
+    kpi: KPIInsiden
+    per_kecamatan: list[InsidenPerKecamatan]
+    per_jenis: list[InsidenPerJenis]
+    tren_respons: list[TrenWaktuRespons]
+    distribusi_jam: list[DistribusiPerJam]
+    recommendations: list[AIRecommendation]

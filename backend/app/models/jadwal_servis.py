@@ -1,6 +1,7 @@
 import enum
 
 from sqlalchemy import BigInteger, Column, Date, Enum, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -16,6 +17,7 @@ class JadwalServis(Base):
     __tablename__ = "jadwal_servis"
 
     id = Column(BigInteger, primary_key=True, index=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
     armada_id = Column(BigInteger, ForeignKey("armada.id"), nullable=False, index=True)
     jenis_reminder = Column(Enum(JenisReminder, name="jenis_reminder_enum"), nullable=False)
     tanggal_jatuh_tempo = Column(Date, nullable=False)

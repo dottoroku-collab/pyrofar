@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import hash_password
-from app.dependencies.auth import require_role
+from app.dependencies.auth import require_permission
+from app.dependencies.tenant import TenantContext, get_tenant_context
 from app.models.audit_log import AuditAksi
 from app.models.user import User, UserRole
 from app.schemas.user import UserAdminPublic, UserCreate, UserUpdate
@@ -17,9 +18,13 @@ router = APIRouter(prefix="/users", tags=["Pengguna"])
 def list_users(
     role: UserRole | None = None,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(require_role([UserRole.administrator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    _current_user: User = Depends(require_permission("manage_users")),
 ):
-    query = db.query(User).filter(User.is_deleted.is_(False))
+    query = db.query(User).filter(
+        User.tenant_id == ctx.tenant_id,
+        User.is_deleted.is_(False)
+    )
     if role:
         query = query.filter(User.role == role)
     return query.order_by(User.nama).all()
@@ -33,19 +38,22 @@ def list_users(
 def create_user(
     payload: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_role([UserRole.administrator])
-    ),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_users")),
 ):
     # Cek jumlah user aktif sebelum membuat user baru
     current_count = (
         db.query(User)
-        .filter(User.is_deleted.is_(False))
+        .filter(
+            User.tenant_id == ctx.tenant_id,
+            User.is_deleted.is_(False)
+        )
         .count()
     )
 
     if not license_service.check_limit(
         db,
+        ctx.tenant_id,
         "users",
         current_count,
     ):
@@ -58,6 +66,7 @@ def create_user(
     exists = (
         db.query(User)
         .filter(
+            User.tenant_id == ctx.tenant_id,
             User.email == payload.email,
             User.is_deleted.is_(False),
         )
@@ -72,6 +81,7 @@ def create_user(
 
     # Buat user
     user = User(
+        tenant_id=ctx.tenant_id,
         nama=payload.nama,
         email=payload.email,
         password_hash=hash_password(payload.password),
@@ -93,6 +103,7 @@ def create_user(
             "email": user.email,
             "role": user.role.value,
         },
+        tenant_id=ctx.tenant_id,
     )
 
     return user
@@ -103,9 +114,14 @@ def update_user(
     user_id: int,
     payload: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_users")),
 ):
-    user = db.query(User).filter(User.id == user_id, User.is_deleted.is_(False)).first()
+    user = db.query(User).filter(
+        User.tenant_id == ctx.tenant_id,
+        User.id == user_id,
+        User.is_deleted.is_(False)
+    ).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan")
 
@@ -115,7 +131,7 @@ def update_user(
     db.commit()
     db.refresh(user)
 
-    audit_service.catat(db, current_user.id, AuditAksi.edit, "users", user.id, nilai_sesudah=data)
+    audit_service.catat(db, current_user.id, AuditAksi.edit, "users", user.id, nilai_sesudah=data, tenant_id=ctx.tenant_id)
     return user
 
 
@@ -123,12 +139,17 @@ def update_user(
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.administrator])),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_users")),
 ):
-    user = db.query(User).filter(User.id == user_id, User.is_deleted.is_(False)).first()
+    user = db.query(User).filter(
+        User.tenant_id == ctx.tenant_id,
+        User.id == user_id,
+        User.is_deleted.is_(False)
+    ).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan")
     user.is_deleted = True
     db.commit()
 
-    audit_service.catat(db, current_user.id, AuditAksi.hapus, "users", user.id)
+    audit_service.catat(db, current_user.id, AuditAksi.hapus, "users", user.id, tenant_id=ctx.tenant_id)
