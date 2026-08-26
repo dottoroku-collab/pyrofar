@@ -3,10 +3,15 @@ import { BrowserRouter } from "react-router-dom";
 
 import AppRouter from "@/routes/AppRouter";
 import { getAntdTheme } from "@/theme/antdTheme";
+import { useEffect } from "react";
 import { useThemeStore } from "@/store/themeStore";
 
 export default function App() {
   const mode = useThemeStore((s) => s.mode);
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", mode);
+  }, [mode]);
 
   return (
     <ConfigProvider theme={getAntdTheme(mode)}>
