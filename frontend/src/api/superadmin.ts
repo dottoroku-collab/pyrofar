@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { apiClient as api } from "./client";
 import { TenantPublic } from "../types/tenant";
 import { UserAdmin } from "../types/user";
 
