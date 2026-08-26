@@ -251,7 +251,7 @@ export default function Dashboard() {
   const [pendingFire, setPendingFire] = useState<any[]>([]);
   const [pendingRescue, setPendingRescue] = useState<any[]>([]);
   const [alarmMuted, setAlarmMuted] = useState(false);
-  const { isSidebarHidden } = useThemeStore();
+  const { mode, isSidebarHidden } = useThemeStore();
   const tokens = useTokens();
 
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -602,7 +602,7 @@ export default function Dashboard() {
         <div style={{ display: 'flex', gap: 10, zIndex: 3, flexShrink: 0, flexWrap: 'wrap' }}>
           {/* 🔥 Kebakaran */}
           <motion.div variants={itemVariants} whileHover={{ y: -3 }} style={{ flex: '1 1 220px', minWidth: 200 }}>
-            <Card className="kpi-fire" bordered={false} style={{ border: '1px solid rgba(239,68,68,0.35)', borderRadius: 16, background: 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(12,12,12,0.7) 100%)', backdropFilter: 'blur(14px)', position: 'relative', overflow: 'hidden', padding: 0 }} styles={{ body: { padding: '14px 16px' } }}>
+            <Card className="kpi-fire" bordered={false} style={{ border: '1px solid rgba(239,68,68,0.35)', borderRadius: 16, background: mode === 'dark' ? 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(12,12,12,0.7) 100%)' : `linear-gradient(135deg, rgba(239,68,68,0.15) 0%, ${tokens.surfaceElevated} 100%)`, backdropFilter: 'blur(14px)', position: 'relative', overflow: 'hidden', padding: 0 }} styles={{ body: { padding: '14px 16px' } }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ color: tokens.textMuted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>🔥 Kebakaran</div>
@@ -623,7 +623,7 @@ export default function Dashboard() {
 
           {/* 🚑 Penyelamatan */}
           <motion.div variants={itemVariants} whileHover={{ y: -3 }} style={{ flex: '1 1 220px', minWidth: 200 }}>
-            <Card className="kpi-blue" bordered={false} style={{ border: '1px solid rgba(59,130,246,0.35)', borderRadius: 16, background: 'linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(12,12,12,0.7) 100%)', backdropFilter: 'blur(14px)', position: 'relative', overflow: 'hidden', padding: 0 }} styles={{ body: { padding: '14px 16px' } }}>
+            <Card className="kpi-blue" bordered={false} style={{ border: '1px solid rgba(59,130,246,0.35)', borderRadius: 16, background: mode === 'dark' ? 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(12,12,12,0.7) 100%)' : `linear-gradient(135deg, rgba(59,130,246,0.15) 0%, ${tokens.surfaceElevated} 100%)`, backdropFilter: 'blur(14px)', position: 'relative', overflow: 'hidden', padding: 0 }} styles={{ body: { padding: '14px 16px' } }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ color: tokens.textMuted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>🚑 Penyelamatan</div>
@@ -644,7 +644,7 @@ export default function Dashboard() {
 
           {/* ⚡ Response Time */}
           <motion.div variants={itemVariants} whileHover={{ y: -3 }} style={{ flex: '1 1 220px', minWidth: 200 }}>
-            <Card className="kpi-green" bordered={false} style={{ border: '1px solid rgba(16,185,129,0.4)', borderRadius: 16, background: 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(12,12,12,0.8) 100%)', backdropFilter: 'blur(14px)', padding: 0 }} styles={{ body: { padding: '14px 16px' } }}>
+            <Card className="kpi-green" bordered={false} style={{ border: '1px solid rgba(16,185,129,0.4)', borderRadius: 16, background: mode === 'dark' ? 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(12,12,12,0.8) 100%)' : `linear-gradient(135deg, rgba(16,185,129,0.15) 0%, ${tokens.surfaceElevated} 100%)`, backdropFilter: 'blur(14px)', padding: 0 }} styles={{ body: { padding: '14px 16px' } }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ color: '#10b981', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>⚡ Response Time</div>
