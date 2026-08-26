@@ -14,18 +14,25 @@ PLANS = {
         "name": "SIM Armada Basic",
         "max_users": 10,
         "max_armada": 20,
-        "features": ["tracking", "maintenance_basic", "reports_basic"],
+        "features": ["dashboard", "armada", "tracking", "pemeliharaan", "laporan", "sarpras", "pencegahan", "relawan"],
     },
     "PRO": {
         "name": "SIM Armada Pro",
         "max_users": 50,
         "max_armada": 100,
         "features": [
+            "dashboard",
+            "armada",
             "tracking",
-            "maintenance_pro",
-            "reports_pro",
+            "pemeliharaan",
+            "laporan",
             "routing",
             "alerting",
+            "sarpras",
+            "pencegahan", 
+            "relawan",
+            "approval",
+            "audit_log"
         ],
     },
     "ENTERPRISE": {
@@ -33,14 +40,21 @@ PLANS = {
         "max_users": None,  # Unlimited
         "max_armada": None,  # Unlimited
         "features": [
+            "dashboard",
+            "armada",
             "tracking",
-            "maintenance_enterprise",
-            "reports_enterprise",
+            "pemeliharaan",
+            "laporan",
             "routing",
             "alerting",
             "api_access",
             "custom_branding",
             "sso",
+            "sarpras",
+            "pencegahan",
+            "relawan",
+            "approval",
+            "audit_log"
         ],
     },
 }
