@@ -128,7 +128,7 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
   
   const [defaultCenter, setDefaultCenter] = useState({ lat: -6.2088, lng: 106.8456 });
 
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
   });
@@ -199,6 +199,15 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, [onEmergencyChange]);
+
+  
+  if (loadError) {
+    return (
+      <Card className="glass-panel" style={{ height: "100%", minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", background: tokens.surface }}>
+        <div style={{ color: 'red' }}>Error loading Google Maps: {loadError.message}</div>
+      </Card>
+    );
+  }
 
   if (loading || !isLoaded) {
     return (
