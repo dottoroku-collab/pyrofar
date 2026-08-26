@@ -284,7 +284,7 @@ export default function Sidebar() {
       />
 
       <Menu
-        theme={mode === "dark" ? "dark" : "light"}
+        theme="dark"
         mode="inline"
         selectedKeys={[selectedKey]}
         items={items}

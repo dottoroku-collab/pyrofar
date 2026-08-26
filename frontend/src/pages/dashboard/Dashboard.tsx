@@ -542,7 +542,7 @@ export default function Dashboard() {
                 onClick={handleMuteToggle}
                 style={{
                   color: alarmMuted ? tokens.textMuted : '#fff',
-                  background: alarmMuted ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)',
+                  background: alarmMuted ? tokens.surfaceHover : 'rgba(255,255,255,0.1)',
                   borderRadius: 8, fontWeight: 700, fontSize: 12
                 }}
               >
@@ -594,7 +594,7 @@ export default function Dashboard() {
               <Text style={{ fontSize: 10, color: tokens.success, fontWeight: 600 }}>Aman</Text>
             </div>
             <div style={{ width: 1, height: 32, background: tokens.border, zIndex: 1 }} />
-            <Button type="text" icon={isFullscreen ? <FullscreenExitOutlined style={{ fontSize: 16, color: tokens.textPrimary }} /> : <FullscreenOutlined style={{ fontSize: 16, color: tokens.textPrimary }} />} onClick={toggleFullscreen} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.05)', zIndex: 1 }} />
+            <Button type="text" icon={isFullscreen ? <FullscreenExitOutlined style={{ fontSize: 16, color: tokens.textPrimary }} /> : <FullscreenOutlined style={{ fontSize: 16, color: tokens.textPrimary }} />} onClick={toggleFullscreen} style={{ width: 36, height: 36, borderRadius: 10, background: tokens.surfaceHover, zIndex: 1 }} />
           </div>
         </motion.div>
 
@@ -670,7 +670,7 @@ export default function Dashboard() {
             { label: "Relawan", val: stats.totalRelawan, icon: <TeamOutlined style={{ color: '#8b5cf6', fontSize: 16 }} />, bg: 'rgba(139,92,246,0.12)' },
           ].map((m, i) => (
             <motion.div key={i} variants={itemVariants} whileHover={{ y: -2 }} style={{ flex: '1 1 100px', minWidth: 90 }}>
-              <Card bordered={false} style={{ border: `1px solid ${tokens.border}`, borderRadius: 14, background: 'rgba(12,12,12,0.5)', padding: 0 }} styles={{ body: { padding: '12px 14px' } }}>
+              <Card bordered={false} style={{ border: `1px solid ${tokens.border}`, borderRadius: 14, background: tokens.surfaceElevated, padding: 0 }} styles={{ body: { padding: '12px 14px' } }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ background: m.bg, padding: 8, borderRadius: 8, display: 'flex' }}>{m.icon}</div>
                   <div>
@@ -693,7 +693,7 @@ export default function Dashboard() {
 
           <motion.div variants={itemVariants} style={{ flex: '0 0 30%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
             {/* Video CCTV */}
-            <Card bordered={false} style={{ border: `1px solid ${tokens.border}`, borderRadius: 14, background: 'rgba(12,12,12,0.6)', flex: '0 0 auto', overflow: 'hidden' }} styles={{ body: { padding: 5 } }}>
+            <Card bordered={false} style={{ border: `1px solid ${tokens.border}`, borderRadius: 14, background: tokens.surfaceElevated, flex: '0 0 auto', overflow: 'hidden' }} styles={{ body: { padding: 5 } }}>
               <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 10, overflow: 'hidden', background: '#000', position: 'relative' }}>
                 <iframe
                   width="100%" height="100%"
@@ -709,7 +709,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Live Incident Feed */}
-            <Card bordered={false} style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: 14, background: 'rgba(12,12,12,0.6)', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }} styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}>
+            <Card bordered={false} style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: 14, background: tokens.surfaceElevated, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }} styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }}>
               <div style={{ padding: '8px 12px', borderBottom: `1px solid ${tokens.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div className="dot-live" style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
@@ -755,7 +755,7 @@ export default function Dashboard() {
         <motion.div variants={itemVariants} style={{
           position: 'fixed', bottom: 0,
           left: (isFullscreen || isSidebarHidden) ? 0 : 260, right: 0,
-          background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(12px)',
+          background: tokens.surfaceElevated, backdropFilter: 'blur(12px)',
           borderTop: hasAnyAlert ? '2px solid rgba(239,68,68,0.6)' : '1px solid rgba(239,68,68,0.25)',
           padding: '5px 0', zIndex: 1000, display: 'flex', alignItems: 'center'
         }}>
