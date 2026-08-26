@@ -226,8 +226,8 @@ export default function InsidenDetail() {
               >
                 <TileLayer
                   url={mode === 'dark'
-                    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
+                    ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
                   attribution='&copy; <a href="https://carto.com/">CARTO</a>'
                 />
                 <Marker position={incident.latitude && incident.longitude ? [parseFloat(incident.latitude), parseFloat(incident.longitude)] : defaultCenter}>

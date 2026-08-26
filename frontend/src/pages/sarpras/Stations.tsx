@@ -205,7 +205,7 @@ export default function Stations() {
                     <MapUpdater center={defaultCenter} />
                     <TileLayer
                       key={mode}
-                      url={mode === 'dark' ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'}
+                      url={mode === 'dark' ? mode === 'dark' ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
                     />
                     <LocationPicker 
                       position={selectedPos || defaultCenter} 

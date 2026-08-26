@@ -128,8 +128,8 @@ export default function PencegahanForm() {
                 >
                   <TileLayer
                     url={mode === 'dark'
-                      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+                      ? mode === 'dark' ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
                     }
                     attribution='&copy; CARTO'
                   />

@@ -237,7 +237,7 @@ export default function PublicLaporInsiden({ jenis }: { jenis: "pemadaman" | "pe
             <div style={{ height: 250, width: '100%', borderRadius: 8, overflow: 'hidden', border: '1px solid #d9d9d9' }}>
               <MapContainer center={defaultCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://carto.com/">CARTO</a>'
                 />
                 <LocationMarker position={position} setPosition={setPosition} />

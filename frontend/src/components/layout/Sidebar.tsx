@@ -160,6 +160,7 @@ export default function Sidebar() {
   const isSuperadmin = useAuthStore((s) => s.user?.is_superadmin);
   const { settings } = useTenantStore();
   const tokens = useTokens();
+  const mode = useThemeStore((s) => s.mode);
   const { hasFeature } = useLicense();
 
   if (!settings) return null;
@@ -229,7 +230,7 @@ export default function Sidebar() {
               fontFamily: "Manrope, sans-serif",
               fontWeight: 800,
               fontSize: 15,
-              color: "#fff",
+              color: tokens.textPrimary,
               flexShrink: 0,
             }}
           >
@@ -243,7 +244,7 @@ export default function Sidebar() {
             fontWeight: 700,
             fontSize: 14,
             lineHeight: 1.3,
-            color: "#fff",
+            color: tokens.textPrimary,
             overflow: "hidden",
           }}
         >
@@ -283,7 +284,7 @@ export default function Sidebar() {
       />
 
       <Menu
-        theme="dark"
+        theme={mode === "dark" ? "dark" : "light"}
         mode="inline"
         selectedKeys={[selectedKey]}
         items={items}

@@ -213,8 +213,8 @@ export default function InsidenForm({ onSuccess, onCancel, defaultJenis }: Insid
           <MapContainer center={defaultCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
             <TileLayer
               url={mode === 'dark'
-                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
+                ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
               attribution='&copy; <a href="https://carto.com/">CARTO</a>'
             />
             <LocationMarker position={position} setPosition={setPosition} />
