@@ -17,7 +17,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { getAssetUrl } from "@/api/client";
 import { useTenantStore } from "@/store/tenantStore";
-import { useTokens } from "@/store/themeStore";
+import { useTokens, useThemeStore } from "@/store/themeStore";
 import { useLicense } from "@/hooks/useLicense";
 
 import type { MenuProps } from "antd";

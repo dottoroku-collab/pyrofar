@@ -1,3 +1,4 @@
+import { useThemeStore } from "@/store/themeStore";
 import { Card, Typography, Spin, Row, Col, Statistic, Button, Tag, Table } from "antd";
 import { useEffect, useState } from "react";
 import {
@@ -44,6 +45,7 @@ const iconPosko = new L.Icon({
 });
 
 export default function RelawanDashboard() {
+  const mode = useThemeStore((s) => s.mode);
   const [data, setData] = useState<any>(null);
   const [relawans, setRelawans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

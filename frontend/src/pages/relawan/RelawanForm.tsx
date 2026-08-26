@@ -1,3 +1,4 @@
+import { useThemeStore } from "@/store/themeStore";
 import { useEffect, useState } from "react";
 import { Form, Input, Button, Card, Select, Upload, message, Divider, Space, Typography, Row, Col } from "antd";
 import { UploadOutlined, PrinterOutlined } from "@ant-design/icons";
@@ -32,6 +33,7 @@ const LocationMarker = ({ position, setPosition }: { position: [number, number],
 };
 
 export default function RelawanForm() {
+  const mode = useThemeStore((s) => s.mode);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();

@@ -575,7 +575,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: tokens.cardBg, backdropFilter: 'blur(12px)', padding: '8px 16px', borderRadius: 12, border: `1px solid ${tokens.border}`, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: tokens.surfaceElevated, backdropFilter: 'blur(12px)', padding: '8px 16px', borderRadius: 12, border: `1px solid ${tokens.border}`, position: 'relative', overflow: 'hidden' }}>
             <div className="scan-bar" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
               <Text style={{ fontSize: 9, color: tokens.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>WAKTU</Text>
