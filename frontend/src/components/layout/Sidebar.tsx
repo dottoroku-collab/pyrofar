@@ -36,35 +36,35 @@ const NAV_STRUCTURE: NavItem[] = [
   {
     key: "core",
     icon: <AppstoreOutlined />,
-    label: "CORE",
+    label: "UTAMA",
     children: [
       { key: "/dashboard", label: "Command Center", roles: ["administrator", "pimpinan"], feature: "dashboard" },
-      { key: "/notifications", label: "Notifications" },
-      { key: "/profile", label: "Profile" },
+      { key: "/notifications", label: "Notifikasi" },
+      { key: "/profile", label: "Profil" },
     ],
   },
   {
     key: "operations",
     icon: <CarOutlined />,
-    label: "OPERATIONS",
+    label: "OPERASIONAL",
     children: [
       { key: "/dashboard/operasi", label: "Dashboard", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar", "operator_lapangan_penyelamatan"] },
-      { key: "/incidents", label: "Incidents", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar"] },
-      { key: "/rescue", label: "Rescue", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_penyelamatan"] },
-      { key: "/organizations", label: "Org Structure", roles: ["administrator", "pimpinan"] },
-      { key: "/personnel", label: "Personnel", roles: ["administrator", "operator_cc", "pimpinan"] },
+      { key: "/incidents", label: "Insiden", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar"] },
+      { key: "/rescue", label: "Penyelamatan", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_penyelamatan"] },
+      { key: "/organizations", label: "Struktur Organisasi", roles: ["administrator", "pimpinan"] },
+      { key: "/personnel", label: "Personil", roles: ["administrator", "operator_cc", "pimpinan"] },
     ],
   },
   {
     key: "prevention",
     icon: <CheckSquareOutlined />,
-    label: "PREVENTION",
+    label: "PENCEGAHAN",
     children: [
       { key: "/dashboard/pencegahan", label: "Dashboard", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
-      { key: "/inspections", label: "Inspections", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
-      { key: "/buildings", label: "Buildings" },
-      { key: "/education", label: "Education", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
-      { key: "/certificates", label: "Certificates" },
+      { key: "/inspections", label: "Inspeksi", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
+      { key: "/buildings", label: "Gedung" },
+      { key: "/education", label: "Edukasi", roles: ["administrator", "pimpinan", "operator_pencegahan"] },
+      { key: "/certificates", label: "Sertifikat" },
     ],
   },
   {
@@ -74,11 +74,11 @@ const NAV_STRUCTURE: NavItem[] = [
     children: [
       { key: "/dashboard/sarpras", label: "Dashboard", roles: ["administrator", "operator_sarpras", "teknisi", "pimpinan"], feature: "dashboard" },
       { key: "/armada", label: "Armada", roles: ["administrator", "operator_sarpras", "teknisi", "pimpinan"], feature: "armada" },
-      { key: "/maintenance", label: "Maintenance", roles: ["administrator", "teknisi"], feature: "pemeliharaan" },
-      { key: "/equipment", label: "Equipment" },
-      { key: "/assets", label: "Assets" },
-      { key: "/stations", label: "Stations" },
-      { key: "/inventory", label: "Inventory" },
+      { key: "/maintenance", label: "Pemeliharaan", roles: ["administrator", "teknisi"], feature: "pemeliharaan" },
+      { key: "/equipment", label: "Perlengkapan" },
+      { key: "/assets", label: "Aset" },
+      { key: "/stations", label: "Posko" },
+      { key: "/inventory", label: "Inventaris" },
     ],
   },
   {
@@ -87,8 +87,8 @@ const NAV_STRUCTURE: NavItem[] = [
     label: "RELAWAN DAMKAR",
     children: [
       { key: "/relawan", label: "Dashboard", roles: ["administrator", "pimpinan"] },
-      { key: "/relawan/training", label: "Training" },
-      { key: "/relawan/communities", label: "Communities" },
+      { key: "/relawan/training", label: "Pelatihan" },
+      { key: "/relawan/communities", label: "Komunitas" },
     ],
   },
   {
@@ -97,7 +97,7 @@ const NAV_STRUCTURE: NavItem[] = [
     label: "ANALYTICS",
     children: [
       { key: "/analytics", label: "Analytics", roles: ["administrator", "pimpinan"] },
-      { key: "/reports", label: "Reports", roles: ["administrator", "pimpinan"], feature: "laporan" },
+      { key: "/reports", label: "Laporan", roles: ["administrator", "pimpinan"], feature: "laporan" },
     ],
   },
   {
@@ -105,11 +105,11 @@ const NAV_STRUCTURE: NavItem[] = [
     icon: <SettingOutlined />,
     label: "ADMIN",
     children: [
-      { key: "/users", label: "Users", roles: ["administrator"] },
-      { key: "/roles", label: "Roles", roles: ["administrator", "pimpinan"] },
-      { key: "/subscription", label: "Subscription", roles: ["administrator"] },
-      { key: "/settings", label: "Settings", roles: ["administrator"] },
-      { key: "/audit-log", label: "Audit Log", roles: ["administrator"], feature: "audit_log" },
+      { key: "/users", label: "Pengguna", roles: ["administrator"] },
+      { key: "/roles", label: "Peran Akses", roles: ["administrator", "pimpinan"] },
+      { key: "/subscription", label: "Langganan", roles: ["administrator"] },
+      { key: "/settings", label: "Pengaturan", roles: ["administrator"] },
+      { key: "/audit-log", label: "Log Audit", roles: ["administrator"], feature: "audit_log" },
     ],
   },
   {
@@ -118,8 +118,8 @@ const NAV_STRUCTURE: NavItem[] = [
     label: "SUPERADMIN",
     requireSuperadmin: true,
     children: [
-      { key: "/superadmin/tenants", label: "Tenants" },
-      { key: "/superadmin/users", label: "Global Users" },
+      { key: "/superadmin/tenants", label: "Tenant" },
+      { key: "/superadmin/users", label: "Pengguna Global" },
     ],
   },
 ];
