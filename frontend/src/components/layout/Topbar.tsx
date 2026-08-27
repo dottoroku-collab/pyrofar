@@ -210,7 +210,14 @@ export default function Topbar({ path, onMenuClick, isMobile }: TopbarProps) {
             <Avatar style={{ background: tokens.sidebarBg, fontSize: 12, fontWeight: 700, color: "#fff" }}>
               {initials}
             </Avatar>
-            {!isMobile && <span style={{ fontSize: 13 }}>{user?.nama}</span>}
+            {!isMobile && (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ fontSize: 13, lineHeight: 1 }}>{user?.nama}</span>
+                <span style={{ fontSize: 10, color: user?.is_superadmin ? tokens.primary : tokens.textMuted, fontWeight: user?.is_superadmin ? 700 : 500, marginTop: 2 }}>
+                  {user?.is_superadmin ? "Superadmin" : user?.role.replace(/_/g, " ").toUpperCase()}
+                </span>
+              </div>
+            )}
             <DownOutlined style={{ fontSize: 10, color: tokens.textMuted }} />
           </div>
         </Dropdown>

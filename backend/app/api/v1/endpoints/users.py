@@ -19,12 +19,15 @@ def list_users(
     role: UserRole | None = None,
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(get_tenant_context),
-    _current_user: User = Depends(require_permission("manage_users")),
+    current_user: User = Depends(require_permission("manage_users")),
 ):
     query = db.query(User).filter(
         User.tenant_id == ctx.tenant_id,
         User.is_deleted.is_(False)
     )
+    if not current_user.is_superadmin:
+        query = query.filter(User.is_superadmin.is_(False))
+
     if role:
         query = query.filter(User.role == role)
     return query.order_by(User.nama).all()
@@ -62,30 +65,52 @@ def create_user(
             detail="Batas jumlah pengguna pada lisensi Anda telah tercapai",
         )
 
-    # Cek email
-    exists = (
-        db.query(User)
-        .filter(
-            User.tenant_id == ctx.tenant_id,
-            User.email == payload.email,
-            User.is_deleted.is_(False),
+    # Cek email & username
+    if payload.email:
+        exists_email = (
+            db.query(User)
+            .filter(
+                User.tenant_id == ctx.tenant_id,
+                User.email == payload.email,
+                User.is_deleted.is_(False),
+            )
+            .first()
         )
-        .first()
-    )
+        if exists_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email sudah terdaftar",
+            )
+    
+    if payload.username:
+        exists_username = (
+            db.query(User)
+            .filter(
+                User.tenant_id == ctx.tenant_id,
+                User.username == payload.username,
+                User.is_deleted.is_(False),
+            )
+            .first()
+        )
+        if exists_username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username sudah terdaftar",
+            )
 
-    if exists:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email sudah terdaftar",
-        )
+    is_superadmin = False
+    if payload.is_superadmin and current_user.is_superadmin:
+        is_superadmin = True
 
     # Buat user
     user = User(
         tenant_id=ctx.tenant_id,
         nama=payload.nama,
         email=payload.email,
+        username=payload.username,
         password_hash=hash_password(payload.password),
         role=payload.role,
+        is_superadmin=is_superadmin,
     )
 
     db.add(user)
@@ -101,6 +126,7 @@ def create_user(
         user.id,
         nilai_sesudah={
             "email": user.email,
+            "username": user.username,
             "role": user.role.value,
         },
         tenant_id=ctx.tenant_id,
@@ -117,15 +143,23 @@ def update_user(
     ctx: TenantContext = Depends(get_tenant_context),
     current_user: User = Depends(require_permission("manage_users")),
 ):
-    user = db.query(User).filter(
+    query = db.query(User).filter(
         User.tenant_id == ctx.tenant_id,
         User.id == user_id,
         User.is_deleted.is_(False)
-    ).first()
+    )
+    
+    if not current_user.is_superadmin:
+        query = query.filter(User.is_superadmin.is_(False))
+
+    user = query.first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan atau Anda tidak memiliki akses")
 
     data = payload.model_dump(exclude_unset=True)
+    if not current_user.is_superadmin and "is_superadmin" in data:
+        del data["is_superadmin"]
+
     for key, value in data.items():
         setattr(user, key, value)
     db.commit()
@@ -142,13 +176,19 @@ def delete_user(
     ctx: TenantContext = Depends(get_tenant_context),
     current_user: User = Depends(require_permission("manage_users")),
 ):
-    user = db.query(User).filter(
+    query = db.query(User).filter(
         User.tenant_id == ctx.tenant_id,
         User.id == user_id,
         User.is_deleted.is_(False)
-    ).first()
+    )
+    
+    if not current_user.is_superadmin:
+        query = query.filter(User.is_superadmin.is_(False))
+
+    user = query.first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan atau Anda tidak memiliki akses")
+    
     user.is_deleted = True
     db.commit()
 

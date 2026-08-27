@@ -23,6 +23,9 @@ interface PersonnelLocation {
   latitude: number;
   longitude: number;
   personnel_status: string;
+  armada_id?: number;
+  armada_nama?: string;
+  armada_no_polisi?: string;
 }
 
 // Google Maps Dark Theme array
@@ -82,7 +85,7 @@ const darkMapStyle = [
   },
 ];
 
-const createAnimatedIcon = (color: string, type: 'fire' | 'rescue' | 'station' | 'personnel', isActive: boolean) => {
+const createAnimatedIcon = (color: string, type: 'fire' | 'rescue' | 'station' | 'personnel' | 'armada', isActive: boolean) => {
   const shadowAnim = isActive ? `animation: pulse 1.5s infinite;` : '';
   const bgColor = isActive ? color : '#9CA3AF'; // Gray if completed
 
@@ -91,6 +94,7 @@ const createAnimatedIcon = (color: string, type: 'fire' | 'rescue' | 'station' |
     rescue: '🚑',
     station: '🏢',
     personnel: '👤',
+    armada: '🚒',
   };
 
   return (
@@ -187,7 +191,10 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
         }
 
         setStations(stationsRes.data || []);
-        setPersonnel(personnelRes.data || []);
+        
+        // Hanya tampilkan pelacakan yang terikat dengan armada
+        const activeArmada = (personnelRes.data || []).filter((p: PersonnelLocation) => p.armada_id);
+        setPersonnel(activeArmada);
       } catch (e) {
         console.error(e);
       } finally {
@@ -225,7 +232,7 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
       extra={
         personnel.length > 0 ? (
           <Tag color="blue" style={{ fontWeight: 600, fontSize: 12 }}>
-            👤 {personnel.length} Personil Aktif
+            🚒 {personnel.length} Armada Aktif
           </Tag>
         ) : null
       }
@@ -299,6 +306,36 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
                         status="processing" 
                         text={station.is_relawan_post ? "POSKO RELAWAN" : "MARKAS KOMANDO"} 
                         style={{ marginTop: 8, fontWeight: 'bold' }} 
+                      />
+                    </div>
+                  )}
+                </div>
+              </OverlayView>
+            );
+          })}
+          
+          {/* ARMADA / PERSONNEL */}
+          {personnel.map((p) => {
+            const pos = { lat: p.latitude, lng: p.longitude };
+            const isActive = p.personnel_status !== 'standby';
+            return (
+              <OverlayView
+                key={`p-${p.user_id}`}
+                position={pos}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+              >
+                <div onClick={(e) => { e.stopPropagation(); setSelectedItem({ type: 'armada', data: p }); }}>
+                  {createAnimatedIcon(tokens.primary, 'armada', isActive)}
+                  
+                  {selectedItem?.type === 'armada' && selectedItem?.data?.user_id === p.user_id && (
+                    <div className="gmap-popup">
+                      <h4 style={{ margin: 0, marginBottom: 4, fontWeight: 'bold', color: '#1f2937' }}>{p.armada_nama}</h4>
+                      <span style={{ fontSize: 12, color: '#4b5563', fontWeight: 'bold' }}>{p.armada_no_polisi}</span><br/>
+                      <span style={{ fontSize: 12, color: '#4b5563' }}>Driver: {p.nama}</span><br/>
+                      <Badge 
+                        status={isActive ? 'processing' : 'default'} 
+                        text={<span style={{ color: '#1f2937', fontWeight: 'bold' }}>{p.personnel_status.toUpperCase()}</span>} 
+                        style={{ marginTop: 8 }} 
                       />
                     </div>
                   )}

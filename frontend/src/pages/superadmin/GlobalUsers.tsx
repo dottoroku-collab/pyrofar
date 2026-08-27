@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, message, Select } from "antd";
+import { Table, Button, Space, message, Select, Switch } from "antd";
 import { superadminApi } from "@/api/superadmin";
 import { TenantPublic } from "@/types/tenant";
 import { UserAdmin } from "@/types/user";
@@ -54,6 +54,26 @@ export default function GlobalUsers() {
       key: "is_active",
       render: (val: boolean) => (val ? "Aktif" : "Non-aktif")
     },
+    {
+      title: "Superadmin",
+      dataIndex: "is_superadmin",
+      key: "is_superadmin",
+      render: (val: boolean, record: UserAdmin) => (
+        <Switch 
+          checked={val} 
+          onChange={async (checked) => {
+            if (!selectedTenant) return;
+            try {
+              await superadminApi.toggleUserSuperadmin(selectedTenant, record.id, checked);
+              message.success(`Status superadmin ${record.nama} diperbarui`);
+              fetchUsers(selectedTenant);
+            } catch (err) {
+              message.error("Gagal mengubah status superadmin");
+            }
+          }} 
+        />
+      )
+    }
   ];
 
   return (

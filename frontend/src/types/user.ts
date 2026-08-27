@@ -11,20 +11,27 @@ export type UserRole =
 export interface UserAdmin {
   id: number;
   nama: string;
-  email: string;
+  email: string | null;
+  username: string | null;
   role: UserRole;
   is_active: boolean;
+  is_superadmin: boolean;
 }
 
 export interface UserCreatePayload {
   nama: string;
-  email: string;
-  password: string;
+  email?: string;
+  username?: string;
+  password?: string;
   role: UserRole;
+  is_superadmin?: boolean;
 }
 
 export interface UserUpdatePayload {
   nama?: string;
+  email?: string;
+  username?: string;
   role?: UserRole;
   is_active?: boolean;
+  is_superadmin?: boolean;
 }

@@ -79,6 +79,24 @@ def get_tenant_users(
     """Get all users for a specific tenant (Superadmin only)"""
     return db.query(User).filter(User.tenant_id == tenant_id, User.is_deleted.is_(False)).all()
 
+@router.put("/tenants/{tenant_id}/users/{user_id}/superadmin")
+def toggle_user_superadmin(
+    tenant_id: UUID,
+    user_id: int,
+    is_superadmin: dict,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Toggle superadmin status for a user (Superadmin only)"""
+    user = db.query(User).filter(User.tenant_id == tenant_id, User.id == user_id, User.is_deleted.is_(False)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Pengguna tidak ditemukan")
+    
+    user.is_superadmin = is_superadmin.get("is_superadmin", False)
+    db.commit()
+    db.refresh(user)
+    return {"message": "Status superadmin berhasil diubah", "is_superadmin": user.is_superadmin}
+
 @router.post("/licenses/generate", response_model=LicenseGenerateResponse)
 def generate_license(
     payload: LicenseGenerateRequest,

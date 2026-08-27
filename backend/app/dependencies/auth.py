@@ -53,6 +53,8 @@ def require_role(allowed_roles: list[UserRole]):
     """
 
     def _checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.is_superadmin:
+            return current_user
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -67,6 +69,9 @@ def require_permission(required_permission: str):
     """Dependency factory: batasi endpoint berdasarkan permission granular."""
 
     def _checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.is_superadmin:
+            return current_user
+            
         from app.core.permissions import has_permission, Permission
 
         try:

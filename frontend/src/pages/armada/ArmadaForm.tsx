@@ -21,6 +21,8 @@ import { jenisKendaraanApi, lokasiApi } from "@/api/masterData";
 import type { ArmadaPayload } from "@/types/armada";
 import type { JenisKendaraan, Lokasi } from "@/types/masterData";
 
+import { usersApi } from "@/api/users";
+
 const DOC_TYPES = [
   { key: "stnk", label: "STNK" },
   { key: "bpkb", label: "BPKB" },
@@ -40,12 +42,14 @@ export default function ArmadaForm() {
   const [form] = Form.useForm();
   const [jenisList, setJenisList] = useState<JenisKendaraan[]>([]);
   const [lokasiList, setLokasiList] = useState<Lokasi[]>([]);
+  const [userList, setUserList] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [savedArmadaId, setSavedArmadaId] = useState<number | null>(id ? Number(id) : null);
 
   useEffect(() => {
     jenisKendaraanApi.list().then(setJenisList);
     lokasiApi.list().then(setLokasiList);
+    usersApi.list().then(setUserList);
     if (isEdit && id) {
       armadaApi.get(Number(id)).then((data) => {
         form.setFieldsValue({
@@ -121,6 +125,17 @@ export default function ArmadaForm() {
                   <Col span={12}>
                     <Form.Item name="lokasi_saat_ini_id" label="Lokasi Awal">
                       <Select options={lokasiList.map((l) => ({ label: l.nama, value: l.id }))} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="driver_id" label="Driver">
+                      <Select
+                        showSearch
+                        allowClear
+                        placeholder="Pilih Driver"
+                        optionFilterProp="label"
+                        options={userList.map((u) => ({ label: `${u.nama} (${u.role})`, value: u.id }))}
+                      />
                     </Form.Item>
                   </Col>
                   <Col span={8}>

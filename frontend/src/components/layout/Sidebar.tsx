@@ -128,8 +128,8 @@ function filterNavItems(items: NavItem[], role: string | undefined, hasFeature: 
   return items
     .filter((item) => {
       if (item.requireSuperadmin && !isSuperadmin) return false;
-      const hasRole = !item.roles || !role || item.roles.includes(role);
-      const isFeatureAllowed = !item.feature || hasFeature(item.feature);
+      const hasRole = isSuperadmin || !item.roles || !role || item.roles.includes(role);
+      const isFeatureAllowed = isSuperadmin || !item.feature || hasFeature(item.feature);
       return hasRole && isFeatureAllowed;
     })
     .map((item) => {

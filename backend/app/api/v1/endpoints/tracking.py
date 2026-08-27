@@ -47,6 +47,11 @@ class PersonnelLocationItem(BaseModel):
     battery_pct: Optional[int] = None
     personnel_status: str = "standby"
     updated_at: str
+    
+    # Armada info
+    armada_id: Optional[int] = None
+    armada_nama: Optional[str] = None
+    armada_no_polisi: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -123,8 +128,10 @@ def get_active_personnel(
     """
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=2)
 
+    from app.models.armada import Armada
     records = (
-        db.query(PersonnelTracking)
+        db.query(PersonnelTracking, Armada)
+        .outerjoin(Armada, Armada.driver_id == PersonnelTracking.user_id)
         .filter(
             PersonnelTracking.tenant_id == current_user.tenant_id,
             PersonnelTracking.updated_at >= cutoff,
@@ -133,7 +140,7 @@ def get_active_personnel(
     )
 
     items = []
-    for r in records:
+    for r, armada in records:
         regu_name = None
         pleton_name = None
         if r.user and r.user.personil and r.user.personil.regu:
@@ -156,6 +163,9 @@ def get_active_personnel(
                 battery_pct=r.battery_pct,
                 personnel_status=r.personnel_status or "standby",
                 updated_at=r.updated_at.isoformat(),
+                armada_id=armada.id if armada else None,
+                armada_nama=armada.nama_armada or armada.kode_armada if armada else None,
+                armada_no_polisi=armada.no_polisi if armada else None,
             )
         )
     return items

@@ -205,6 +205,7 @@ export default function ArmadaList() {
             { title: "Jenis", render: (_, r) => <span style={{ color: tokens.textMuted }}>{jenisMap[r.jenis_kendaraan_id] ?? "-"}</span> },
             { title: "Lokasi Posko", render: (_, r) => <span style={{ color: tokens.textPrimary }}>{r.lokasi_saat_ini_id ? lokasiMap[r.lokasi_saat_ini_id] : "-"}</span> },
             { title: "No. Polisi", dataIndex: "no_polisi", render: (text) => <Tag style={{ background: '#000', color: '#fff', border: 'none', fontWeight: 'bold' }}>{text}</Tag> },
+            { title: "Driver", dataIndex: "driver_name", render: (text) => <span style={{ color: tokens.textPrimary }}>{text ?? "-"}</span> },
             {
               title: "Status",
               dataIndex: "status_armada",

@@ -21,6 +21,7 @@ class ArmadaBase(BaseModel):
     kapasitas: str | None = None
     status_kepemilikan: str | None = None
     lokasi_saat_ini_id: int | None = None
+    driver_id: int | None = None
 
 
 class ArmadaCreate(ArmadaBase):
@@ -43,6 +44,7 @@ class ArmadaUpdate(BaseModel):
     kapasitas: str | None = None
     status_kepemilikan: str | None = None
     lokasi_saat_ini_id: int | None = None
+    driver_id: int | None = None
 
 
 class ArmadaPublic(ArmadaBase):
@@ -51,6 +53,7 @@ class ArmadaPublic(ArmadaBase):
     status_armada: StatusArmada
     status_approval: ApprovalStatus
     created_at: datetime
+    driver_name: str | None = None
 
     class Config:
         from_attributes = True
@@ -65,6 +68,8 @@ class ArmadaListItem(BaseModel):
     status_armada: StatusArmada
     no_polisi: str | None = None
     tanggal_stnk: date | None = None
+    driver_id: int | None = None
+    driver_name: str | None = None
 
     class Config:
         from_attributes = True

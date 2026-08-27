@@ -18,6 +18,8 @@ export interface ArmadaListItem {
   lokasi_saat_ini_id: number | null;
   status_armada: StatusArmada;
   no_polisi: string | null;
+  driver_id?: number | null;
+  driver_name?: string | null;
 }
 
 export interface ArmadaPublic extends ArmadaListItem {
@@ -59,6 +61,7 @@ export interface ArmadaPayload {
   kapasitas?: string | null;
   status_kepemilikan?: string | null;
   lokasi_saat_ini_id?: number | null;
+  driver_id?: number | null;
 }
 
 export const STATUS_KRITIS: StatusArmada[] = ["rusak_berat", "tidak_aktif"];

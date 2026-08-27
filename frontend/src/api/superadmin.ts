@@ -30,6 +30,11 @@ export const superadminApi = {
     return response.data;
   },
 
+  toggleUserSuperadmin: async (tenantId: string, userId: number, isSuperadmin: boolean): Promise<any> => {
+    const response = await api.put(`/superadmin/tenants/${tenantId}/users/${userId}/superadmin`, { is_superadmin: isSuperadmin });
+    return response.data;
+  },
+
   generateLicense: async (data: {
     plan_code: string;
     organization_name: string;

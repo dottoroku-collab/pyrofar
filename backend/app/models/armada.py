@@ -66,6 +66,7 @@ class Armada(Base):
         default=ApprovalStatus.tidak_perlu,
     )
     lokasi_saat_ini_id = Column(Integer, ForeignKey("lokasi.id"), nullable=True)
+    driver_id = Column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_by = Column(BigInteger, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -74,3 +75,8 @@ class Armada(Base):
     jenis_kendaraan = relationship("JenisKendaraan")
     lokasi = relationship("Lokasi")
     files = relationship("ArmadaFile", back_populates="armada", cascade="all, delete-orphan")
+    driver = relationship("User", foreign_keys=[driver_id])
+
+    @property
+    def driver_name(self) -> str | None:
+        return self.driver.nama if self.driver else None
