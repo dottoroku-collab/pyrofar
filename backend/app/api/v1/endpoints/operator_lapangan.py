@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from app.api import deps
+from app.core.database import get_db
+from app.dependencies.auth import get_current_user
 from app.core.security import get_password_hash
 from app.models.user import User, UserRole
 from app.models.operator_lapangan import OperatorLapangan
@@ -39,8 +40,8 @@ def build_operator_response(operator: OperatorLapangan, armada: Armada = None) -
 
 @router.get("/", response_model=List[OperatorLapanganResponse])
 def read_operators(
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
@@ -62,9 +63,9 @@ def read_operators(
 @router.post("/", response_model=OperatorLapanganResponse)
 def create_operator(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     operator_in: OperatorLapanganCreate,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(get_current_user),
 ) -> Any:
     """
     Create new field operator.
@@ -125,9 +126,9 @@ def create_operator(
 @router.get("/{id}", response_model=OperatorLapanganResponse)
 def read_operator(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(get_current_user),
 ) -> Any:
     """
     Get operator by ID.
@@ -149,10 +150,10 @@ def read_operator(
 @router.put("/{id}", response_model=OperatorLapanganResponse)
 def update_operator(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     id: int,
     operator_in: OperatorLapanganUpdate,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(get_current_user),
 ) -> Any:
     """
     Update an operator.
