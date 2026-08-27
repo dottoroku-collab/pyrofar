@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.dependencies.auth import get_current_user
-from app.core.security import get_password_hash
+from app.core.security import hash_password
 from app.models.user import User, UserRole
 from app.models.operator_lapangan import OperatorLapangan
 from app.models.armada import Armada
@@ -90,7 +90,7 @@ def create_operator(
         tenant_id=current_user.tenant_id,
         nama=operator_in.nama,
         username=operator_in.nip_nik,
-        password_hash=get_password_hash(password),
+        password_hash=hash_password(password),
         role=UserRole(operator_in.role),
         is_active=True,
     )
@@ -171,7 +171,7 @@ def update_operator(
             raise HTTPException(status_code=400, detail="Role tidak valid")
         user.role = UserRole(operator_in.role)
     if operator_in.password:
-        user.password_hash = get_password_hash(operator_in.password)
+        user.password_hash = hash_password(operator_in.password)
 
     if operator_in.foto_url is not None:
         op.foto_url = operator_in.foto_url
