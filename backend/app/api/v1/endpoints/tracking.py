@@ -52,6 +52,11 @@ class PersonnelLocationItem(BaseModel):
     armada_id: Optional[int] = None
     armada_nama: Optional[str] = None
     armada_no_polisi: Optional[str] = None
+    
+    # Operator info
+    foto_url: Optional[str] = None
+    sim_expiry_date: Optional[str] = None
+    nip_nik: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -129,9 +134,11 @@ def get_active_personnel(
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=2)
 
     from app.models.armada import Armada
+    from app.models.operator_lapangan import OperatorLapangan
     records = (
-        db.query(PersonnelTracking, Armada)
+        db.query(PersonnelTracking, Armada, OperatorLapangan)
         .outerjoin(Armada, Armada.driver_id == PersonnelTracking.user_id)
+        .outerjoin(OperatorLapangan, OperatorLapangan.user_id == PersonnelTracking.user_id)
         .filter(
             PersonnelTracking.tenant_id == current_user.tenant_id,
             PersonnelTracking.updated_at >= cutoff,
@@ -140,13 +147,18 @@ def get_active_personnel(
     )
 
     items = []
-    for r, armada in records:
+    for r, armada, operator in records:
         regu_name = None
         pleton_name = None
         if r.user and r.user.personil and r.user.personil.regu:
             regu_name = r.user.personil.regu.nama
             if r.user.personil.regu.pleton:
                 pleton_name = r.user.personil.regu.pleton.nama
+
+        # Get operator details if present
+        foto_url = operator.foto_url if operator else None
+        sim_expiry_date = operator.sim_expiry_date if operator else None
+        nip_nik = operator.nip_nik if operator else None
 
         items.append(
             PersonnelLocationItem(
@@ -166,6 +178,9 @@ def get_active_personnel(
                 armada_id=armada.id if armada else None,
                 armada_nama=armada.nama_armada or armada.kode_armada if armada else None,
                 armada_no_polisi=armada.no_polisi if armada else None,
+                foto_url=foto_url,
+                sim_expiry_date=sim_expiry_date.isoformat() if sim_expiry_date else None,
+                nip_nik=nip_nik,
             )
         )
     return items

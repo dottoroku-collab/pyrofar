@@ -26,6 +26,9 @@ interface PersonnelLocation {
   armada_id?: number;
   armada_nama?: string;
   armada_no_polisi?: string;
+  foto_url?: string;
+  sim_expiry_date?: string;
+  nip_nik?: string;
 }
 
 // Google Maps Dark Theme array
@@ -334,15 +337,30 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
                   {createAnimatedIcon(color, iconType, isActive)}
                   
                   {selectedItem?.type === 'armada' && selectedItem?.data?.user_id === p.user_id && (
-                    <div className="gmap-popup">
-                      <h4 style={{ margin: 0, marginBottom: 4, fontWeight: 'bold', color: '#1f2937' }}>{p.armada_nama}</h4>
-                      <span style={{ fontSize: 12, color: '#4b5563', fontWeight: 'bold' }}>{p.armada_no_polisi}</span><br/>
-                      <span style={{ fontSize: 12, color: '#4b5563' }}>Operator: {p.nama}</span><br/>
-                      <Badge 
-                        status={isActive ? 'processing' : 'default'} 
-                        text={<span style={{ color: '#1f2937', fontWeight: 'bold' }}>{p.personnel_status.toUpperCase()}</span>} 
-                        style={{ marginTop: 8 }} 
-                      />
+                    <div className="gmap-popup" style={{ width: 250 }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                        {p.foto_url ? (
+                          <img src={p.foto_url} alt="Profile" style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: 50, height: 50, borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>👤</div>
+                        )}
+                        <div>
+                          <h4 style={{ margin: 0, fontWeight: 'bold', color: '#1f2937' }}>{p.nama}</h4>
+                          <span style={{ fontSize: 12, color: '#6b7280' }}>NIK/NIP: {p.nip_nik || '-'}</span><br/>
+                          <Tag color={p.sim_expiry_date && dayjs(p.sim_expiry_date).isBefore(dayjs()) ? 'red' : 'green'} style={{ marginTop: 2, fontSize: 10 }}>
+                            SIM: {p.sim_expiry_date ? dayjs(p.sim_expiry_date).format('DD MMM YYYY') : 'Tidak Ada'}
+                          </Tag>
+                        </div>
+                      </div>
+                      <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 8 }}>
+                        <span style={{ fontSize: 12, color: '#4b5563', fontWeight: 'bold' }}>Armada: {p.armada_nama}</span><br/>
+                        <span style={{ fontSize: 12, color: '#4b5563' }}>Plat: {p.armada_no_polisi}</span><br/>
+                        <Badge 
+                          status={isActive ? 'processing' : 'default'} 
+                          text={<span style={{ color: '#1f2937', fontWeight: 'bold' }}>{p.personnel_status.toUpperCase()}</span>} 
+                          style={{ marginTop: 8 }} 
+                        />
+                      </div>
                     </div>
                   )}
                 </div>

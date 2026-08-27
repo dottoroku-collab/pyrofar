@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Space, Tag, Modal, Form, Input, Select, DatePicker, message, Card } from "antd";
-import { PlusOutlined, EyeOutlined } from "@ant-design/icons";
+import { Table, Button, Space, Tag, Modal, Form, Input, Select, DatePicker, message, Card, Upload } from "antd";
+import { PlusOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
+import type { UploadFile, UploadProps } from "antd";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { OperatorLapangan, OperatorLapanganCreate, getOperators, createOperator } from "@/api/operatorLapangan";
+import { OperatorLapangan, OperatorLapanganCreate, getOperators, createOperator, uploadOperatorFile } from "@/api/operatorLapangan";
 import { armadaApi } from "@/api/armada";
 import { useTokens } from "@/store/themeStore";
 
@@ -13,6 +14,9 @@ export default function OperatorList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [armadas, setArmadas] = useState<any[]>([]);
+  const [fotoFile, setFotoFile] = useState<UploadFile[]>([]);
+  const [simFile, setSimFile] = useState<UploadFile[]>([]);
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
   const tokens = useTokens();
 
@@ -43,7 +47,19 @@ export default function OperatorList() {
   }, []);
 
   const handleCreate = async (values: any) => {
+    setUploading(true);
     try {
+      let foto_url = undefined;
+      let sim_file_url = undefined;
+
+      if (fotoFile.length > 0 && fotoFile[0].originFileObj) {
+        foto_url = await uploadOperatorFile(fotoFile[0].originFileObj as File);
+      }
+      
+      if (simFile.length > 0 && simFile[0].originFileObj) {
+        sim_file_url = await uploadOperatorFile(simFile[0].originFileObj as File);
+      }
+
       const payload: OperatorLapanganCreate = {
         nip_nik: values.nip_nik,
         nama: values.nama,
@@ -51,16 +67,33 @@ export default function OperatorList() {
         password: values.password || undefined,
         armada_id: values.armada_id || undefined,
         sim_expiry_date: values.sim_expiry_date ? values.sim_expiry_date.format("YYYY-MM-DD") : undefined,
+        foto_url,
+        sim_file_url,
       };
       await createOperator(payload);
       message.success("Operator berhasil didaftarkan");
       setIsModalOpen(false);
       form.resetFields();
+      setFotoFile([]);
+      setSimFile([]);
       fetchOperators();
     } catch (e: any) {
       message.error(e.response?.data?.detail || "Gagal menyimpan data");
+    } finally {
+      setUploading(false);
     }
   };
+
+  const uploadProps = (setter: React.Dispatch<React.SetStateAction<UploadFile[]>>): UploadProps => ({
+    onRemove: (file) => {
+      setter((prev) => prev.filter((item) => item.uid !== file.uid));
+    },
+    beforeUpload: (file) => {
+      setter([file]);
+      return false;
+    },
+    maxCount: 1,
+  });
 
   const columns = [
     {
@@ -164,10 +197,20 @@ export default function OperatorList() {
           <Form.Item name="sim_expiry_date" label="Masa Berlaku SIM">
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
+          <Form.Item label="Foto Profil">
+            <Upload {...uploadProps(setFotoFile)} fileList={fotoFile} accept="image/*">
+              <Button icon={<UploadOutlined />}>Pilih Foto</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item label="Dokumen SIM">
+            <Upload {...uploadProps(setSimFile)} fileList={simFile} accept="image/*,.pdf">
+              <Button icon={<UploadOutlined />}>Pilih SIM (PDF/Gambar)</Button>
+            </Upload>
+          </Form.Item>
           <Form.Item>
             <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-              <Button onClick={() => setIsModalOpen(false)}>Batal</Button>
-              <Button type="primary" htmlType="submit">
+              <Button onClick={() => setIsModalOpen(false)} disabled={uploading}>Batal</Button>
+              <Button type="primary" htmlType="submit" loading={uploading}>
                 Simpan
               </Button>
             </Space>

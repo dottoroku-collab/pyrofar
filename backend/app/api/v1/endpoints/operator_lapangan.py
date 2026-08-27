@@ -1,12 +1,13 @@
 import logging
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from app.core.database import get_db
 from app.dependencies.auth import get_current_user
 from app.core.security import hash_password
+from app.utils.file_storage import save_upload
 from app.models.user import User, UserRole
 from app.models.operator_lapangan import OperatorLapangan
 from app.models.armada import Armada
@@ -200,3 +201,17 @@ def update_operator(
     db.refresh(op)
 
     return build_operator_response(op, assigned_armada)
+
+
+@router.post("/upload", response_model=dict)
+def upload_operator_file(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Upload foto profil atau SIM untuk operator lapangan.
+    Returns: {"url": "path/to/uploaded/file"}
+    """
+    file_url = save_upload(file, subfolder="operator_lapangan")
+    return {"url": file_url}

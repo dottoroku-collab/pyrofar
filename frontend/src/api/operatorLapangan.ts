@@ -62,3 +62,15 @@ export const updateOperator = async (id: number, payload: OperatorLapanganUpdate
   const { data } = await apiClient.put<OperatorLapangan>(`/operator-lapangan/${id}`, payload);
   return data;
 };
+
+export const uploadOperatorFile = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const { data } = await apiClient.post<{ url: string }>("/operator-lapangan/upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data.url;
+};
