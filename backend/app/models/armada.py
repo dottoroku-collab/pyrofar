@@ -80,3 +80,9 @@ class Armada(Base):
     @property
     def driver_name(self) -> str | None:
         return self.driver.nama if self.driver else None
+
+    @property
+    def operator_lapangan_id(self) -> int | None:
+        if self.driver and self.driver.operator_lapangan:
+            return self.driver.operator_lapangan.id
+        return None

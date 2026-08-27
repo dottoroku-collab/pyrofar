@@ -42,6 +42,8 @@ import RescueDetail from "@/pages/rescue/RescueDetail";
 
 import OrganizationList from "@/pages/operations/OrganizationList";
 import PersonnelList from "@/pages/operations/PersonnelList";
+import OperatorList from "@/pages/operations/OperatorList";
+import OperatorDetail from "@/pages/operations/OperatorDetail";
 
 import EdukasiList from "@/pages/education/EdukasiList";
 import EdukasiForm from "@/pages/education/EdukasiForm";
@@ -141,6 +143,9 @@ export default function AppRouter() {
         {/* OPERATIONS: Personnel & Org Structure */}
         <Route path="/organizations" element={<OrganizationList />} />
         <Route path="/personnel" element={<PersonnelList />} />
+        
+        <Route path="/operators" element={<OperatorList />} />
+        <Route path="/operators/:id" element={<OperatorDetail />} />
 
         {/* PREVENTION: Inspections, Buildings, Education, Certificates */}
         <Route path="/inspections" element={<PencegahanList />} />

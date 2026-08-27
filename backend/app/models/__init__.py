@@ -30,6 +30,7 @@ from app.models.komunitas_relawan import KomunitasRelawan
 from app.models.pelatihan_relawan import PelatihanRelawan
 from app.models.insiden_relawan import InsidenRelawan
 from app.models.personnel_tracking import PersonnelTracking  # noqa: F401
+from app.models.operator_lapangan import OperatorLapangan  # noqa: F401
 
 from app.models.unit_organisasi import Kompi, Pleton, Regu  # noqa: F401
 from app.models.personil import Personil, JabatanPersonil  # noqa: F401

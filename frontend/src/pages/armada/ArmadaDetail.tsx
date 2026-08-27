@@ -193,6 +193,17 @@ await armadaApi.ubahStatus(
             <Descriptions.Item label="Status Kepemilikan">
               {armada.status_kepemilikan ?? "-"}
             </Descriptions.Item>
+            <Descriptions.Item label="Operator Lapangan">
+              {armada.operator_lapangan_id ? (
+                <Button type="link" size="small" style={{ padding: 0 }} onClick={() => navigate(`/operators/${armada.operator_lapangan_id}`)}>
+                  {armada.driver_name || `Operator ID: ${armada.operator_lapangan_id}`}
+                </Button>
+              ) : armada.driver_name ? (
+                armada.driver_name
+              ) : (
+                "-"
+              )}
+            </Descriptions.Item>
           </Descriptions>
         </Card>
 

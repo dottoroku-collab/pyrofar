@@ -35,6 +35,7 @@ export interface ArmadaPublic extends ArmadaListItem {
   qr_code_value: string;
   status_approval: ApprovalStatus;
   created_at: string;
+  operator_lapangan_id?: number | null;
 }
 
 export interface ArmadaFile {

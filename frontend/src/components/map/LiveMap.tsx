@@ -318,6 +318,12 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
           {personnel.map((p) => {
             const pos = { lat: p.latitude, lng: p.longitude };
             const isActive = p.personnel_status !== 'standby';
+            
+            // Determine icon and color based on role
+            const isDamkar = p.role === 'operator_lapangan_damkar';
+            const iconType = isDamkar ? 'armada' : 'rescue';
+            const color = isDamkar ? tokens.danger : tokens.primary;
+
             return (
               <OverlayView
                 key={`p-${p.user_id}`}
@@ -325,13 +331,13 @@ export default function LiveMap({ onEmergencyChange }: LiveMapProps) {
                 mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
               >
                 <div onClick={(e) => { e.stopPropagation(); setSelectedItem({ type: 'armada', data: p }); }}>
-                  {createAnimatedIcon(tokens.primary, 'armada', isActive)}
+                  {createAnimatedIcon(color, iconType, isActive)}
                   
                   {selectedItem?.type === 'armada' && selectedItem?.data?.user_id === p.user_id && (
                     <div className="gmap-popup">
                       <h4 style={{ margin: 0, marginBottom: 4, fontWeight: 'bold', color: '#1f2937' }}>{p.armada_nama}</h4>
                       <span style={{ fontSize: 12, color: '#4b5563', fontWeight: 'bold' }}>{p.armada_no_polisi}</span><br/>
-                      <span style={{ fontSize: 12, color: '#4b5563' }}>Driver: {p.nama}</span><br/>
+                      <span style={{ fontSize: 12, color: '#4b5563' }}>Operator: {p.nama}</span><br/>
                       <Badge 
                         status={isActive ? 'processing' : 'default'} 
                         text={<span style={{ color: '#1f2937', fontWeight: 'bold' }}>{p.personnel_status.toUpperCase()}</span>} 

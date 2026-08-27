@@ -54,6 +54,7 @@ class ArmadaPublic(ArmadaBase):
     status_approval: ApprovalStatus
     created_at: datetime
     driver_name: str | None = None
+    operator_lapangan_id: int | None = None
 
     class Config:
         from_attributes = True

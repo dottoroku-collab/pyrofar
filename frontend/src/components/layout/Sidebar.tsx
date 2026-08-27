@@ -51,8 +51,7 @@ const NAV_STRUCTURE: NavItem[] = [
       { key: "/dashboard/operasi", label: "Dashboard", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar", "operator_lapangan_penyelamatan"] },
       { key: "/incidents", label: "Insiden", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_damkar"] },
       { key: "/rescue", label: "Penyelamatan", roles: ["administrator", "pimpinan", "operator_cc", "operator_lapangan_penyelamatan"] },
-      // { key: "/organizations", label: "Struktur Organisasi", roles: ["administrator", "pimpinan"] },
-      // { key: "/personnel", label: "Personil", roles: ["administrator", "operator_cc", "pimpinan"] },
+      { key: "/operators", label: "Operator Lapangan", roles: ["administrator", "pimpinan", "operator_cc"] },
     ],
   },
   {
