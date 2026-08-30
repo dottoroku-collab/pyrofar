@@ -196,7 +196,7 @@ def delete_user(
 
 
 from pydantic import BaseModel
-from app.core.security import get_password_hash
+from app.core.security import hash_password
 
 class PasswordReset(BaseModel):
     new_password: str
@@ -222,7 +222,7 @@ def reset_user_password(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan atau Anda tidak memiliki akses")
         
-    user.hashed_password = get_password_hash(payload.new_password)
+    user.hashed_password = hash_password(payload.new_password)
     db.commit()
     
     audit_service.catat(db, current_user.id, AuditAksi.edit, "users", user.id, nilai_sesudah={"action": "reset_password"}, tenant_id=ctx.tenant_id)
