@@ -101,7 +101,7 @@ def toggle_user_superadmin(
     return {"message": "Status superadmin berhasil diubah", "is_superadmin": user.is_superadmin}
 
 from app.schemas.user import UserCreate
-from app.core.security import get_password_hash
+from app.core.security import hash_password
 from pydantic import BaseModel
 
 class PasswordReset(BaseModel):
@@ -119,7 +119,7 @@ def create_tenant_user(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant tidak ditemukan")
         
-    hashed_password = get_password_hash(payload.password)
+    hashed_password = hash_password(payload.password)
     new_user = User(
         nama=payload.nama,
         email=payload.email,
@@ -147,7 +147,7 @@ def reset_tenant_user_password(
     if not user:
         raise HTTPException(status_code=404, detail="Pengguna tidak ditemukan")
         
-    user.hashed_password = get_password_hash(payload.new_password)
+    user.hashed_password = hash_password(payload.new_password)
     db.commit()
     return {"message": "Password berhasil direset"}
 
