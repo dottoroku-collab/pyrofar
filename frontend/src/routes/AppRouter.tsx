@@ -185,7 +185,6 @@ export default function AppRouter() {
 
         {/* ADMIN */}
         <Route path="/users" element={<Pengguna />} />
-        <Route path="/roles" element={<RolesPermissions />} />
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/settings" element={<Pengaturan />} />
         <Route path="/audit-log" element={<FeatureRoute feature="audit_log"><AuditLog /></FeatureRoute>} />

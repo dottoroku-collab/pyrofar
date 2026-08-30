@@ -193,3 +193,37 @@ def delete_user(
     db.commit()
 
     audit_service.catat(db, current_user.id, AuditAksi.hapus, "users", user.id, tenant_id=ctx.tenant_id)
+
+
+from pydantic import BaseModel
+from app.core.security import get_password_hash
+
+class PasswordReset(BaseModel):
+    new_password: str
+
+@router.put("/{user_id}/password")
+def reset_user_password(
+    user_id: int,
+    payload: PasswordReset,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context),
+    current_user: User = Depends(require_permission("manage_users")),
+):
+    query = db.query(User).filter(
+        User.tenant_id == ctx.tenant_id,
+        User.id == user_id,
+        User.is_deleted.is_(False)
+    )
+    
+    if not current_user.is_superadmin:
+        query = query.filter(User.is_superadmin.is_(False))
+
+    user = query.first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pengguna tidak ditemukan atau Anda tidak memiliki akses")
+        
+    user.hashed_password = get_password_hash(payload.new_password)
+    db.commit()
+    
+    audit_service.catat(db, current_user.id, AuditAksi.edit, "users", user.id, nilai_sesudah={"action": "reset_password"}, tenant_id=ctx.tenant_id)
+    return {"message": "Password berhasil direset"}

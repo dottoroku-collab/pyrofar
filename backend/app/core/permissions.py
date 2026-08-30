@@ -52,8 +52,9 @@ ROLE_PERMISSIONS: Dict[UserRole, List[Permission]] = {
         Permission.VIEW_ARMADA,
         Permission.VIEW_PEMELIHARAAN,
         Permission.VIEW_REPORTS, Permission.EXPORT_REPORTS,
-        Permission.MANAGE_INSIDEN, Permission.VIEW_INSIDEN,
-        Permission.MANAGE_PENCEGAHAN, Permission.VIEW_PENCEGAHAN,
+        Permission.VIEW_AUDIT_LOG,
+        Permission.VIEW_INSIDEN,
+        Permission.VIEW_PENCEGAHAN,
         Permission.VIEW_SARANA
     ],
     UserRole.operator_cc: [

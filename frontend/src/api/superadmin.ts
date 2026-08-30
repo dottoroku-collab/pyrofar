@@ -35,6 +35,16 @@ export const superadminApi = {
     return response.data;
   },
 
+  createTenantUser: async (tenantId: string, data: any): Promise<UserAdmin> => {
+    const response = await api.post(`/superadmin/tenants/${tenantId}/users`, data);
+    return response.data;
+  },
+
+  resetUserPassword: async (tenantId: string, userId: number, data: { new_password: string }): Promise<any> => {
+    const response = await api.put(`/superadmin/tenants/${tenantId}/users/${userId}/password`, data);
+    return response.data;
+  },
+
   generateLicense: async (data: {
     plan_code: string;
     organization_name: string;

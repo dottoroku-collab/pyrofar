@@ -104,11 +104,10 @@ const NAV_STRUCTURE: NavItem[] = [
     icon: <SettingOutlined />,
     label: "ADMIN",
     children: [
-      { key: "/users", label: "Pengguna", roles: ["administrator"] },
-      { key: "/roles", label: "Peran Akses", roles: ["administrator", "pimpinan"] },
-      { key: "/subscription", label: "Langganan", roles: ["administrator"] },
-      { key: "/settings", label: "Pengaturan", roles: ["administrator"] },
-      { key: "/audit-log", label: "Log Audit", roles: ["administrator"], feature: "audit_log" },
+      { key: "/users", label: "Pengguna", roles: ["administrator", "pimpinan"] },
+      { key: "/subscription", label: "Langganan", roles: ["administrator", "pimpinan"] },
+      { key: "/settings", label: "Pengaturan", roles: ["administrator", "pimpinan"] },
+      { key: "/audit-log", label: "Log Audit", roles: ["administrator", "pimpinan"], feature: "audit_log" },
     ],
   },
   {

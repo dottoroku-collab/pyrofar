@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { usersApi } from "@/api/users";
 import type { UserAdmin, UserRole } from "@/types/user";
 
+import { useAuthStore } from "@/store/authStore";
+
 const ROLE_OPTIONS: { label: string; value: UserRole }[] = [
   { label: "Administrator", value: "administrator" },
   { label: "Pimpinan", value: "pimpinan" },
@@ -16,11 +18,16 @@ const ROLE_OPTIONS: { label: string; value: UserRole }[] = [
 ];
 
 export default function Pengguna() {
+  const role = useAuthStore((s) => s.user?.role);
   const [data, setData] = useState<UserAdmin[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<UserAdmin | null>(null);
   const [form] = Form.useForm();
+  
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetUserId, setResetUserId] = useState<number | null>(null);
+  const [resetForm] = Form.useForm();
 
   async function load() {
     setLoading(true);
@@ -73,13 +80,30 @@ export default function Pengguna() {
     }
   }
 
+  async function handleResetPassword(values: any) {
+    if (!resetUserId) return;
+    try {
+      setLoading(true);
+      await usersApi.resetPassword(resetUserId, { new_password: values.new_password });
+      message.success("Password berhasil direset");
+      setResetModalOpen(false);
+      resetForm.resetFields();
+    } catch (err: any) {
+      message.error(err?.response?.data?.detail ?? "Gagal mereset password");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <Card
       title="Manajemen Pengguna"
       extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          Tambah Pengguna
-        </Button>
+        role !== "pimpinan" && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Tambah Pengguna
+          </Button>
+        )
       }
     >
       <Table
@@ -95,23 +119,28 @@ export default function Pengguna() {
             dataIndex: "is_active",
             render: (v: boolean) => <Tag color={v ? "green" : "default"}>{v ? "Aktif" : "Nonaktif"}</Tag>,
           },
-          {
+          ...(role !== "pimpinan" ? [{
             title: "Aksi",
             width: 120,
-            render: (_, user) => (
-              <div style={{ display: "flex", gap: 6 }}>
-                <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(user)} />
-                <Popconfirm
-                  title="Hapus pengguna ini?"
-                  okText="Hapus"
-                  cancelText="Batal"
-                  onConfirm={() => handleDelete(user.id)}
+            render: (_: any, record: UserAdmin) => (
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} />
+                <Button 
+                  size="small" 
+                  danger 
+                  onClick={() => {
+                    setResetUserId(record.id);
+                    setResetModalOpen(true);
+                  }}
                 >
+                  Reset Password
+                </Button>
+                <Popconfirm title="Hapus pengguna?" onConfirm={() => handleDelete(record.id)}>
                   <Button size="small" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
               </div>
             ),
-          },
+          }] : []),
         ]}
       />
 
@@ -145,6 +174,27 @@ export default function Pengguna() {
               <Switch />
             </Form.Item>
           )}
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Reset Password"
+        open={resetModalOpen}
+        onCancel={() => {
+          setResetModalOpen(false);
+          resetForm.resetFields();
+        }}
+        onOk={() => resetForm.submit()}
+        confirmLoading={loading}
+      >
+        <Form form={resetForm} layout="vertical" onFinish={handleResetPassword}>
+          <Form.Item 
+            name="new_password" 
+            label="Password Baru" 
+            rules={[{ required: true, message: 'Harap masukkan password baru' }]}
+          >
+            <Input.Password />
+          </Form.Item>
         </Form>
       </Modal>
     </Card>

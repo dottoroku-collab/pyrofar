@@ -20,7 +20,7 @@ def get_all_tenants(
     _=Depends(get_current_superadmin),
 ):
     """Get all tenants (Superadmin only)"""
-    return db.query(Tenant).all()
+    return db.query(Tenant).filter(Tenant.deleted_at.is_(None)).all()
 
 @router.post("/tenants", response_model=TenantPublic)
 def create_tenant(
@@ -66,7 +66,10 @@ def delete_tenant(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
         
-    db.delete(tenant)
+    from sqlalchemy.sql import func
+    from app.models.tenant import TenantStatus
+    tenant.deleted_at = func.now()
+    tenant.status = TenantStatus.cancelled
     db.commit()
     return {"message": "Tenant deleted successfully"}
 
@@ -96,6 +99,58 @@ def toggle_user_superadmin(
     db.commit()
     db.refresh(user)
     return {"message": "Status superadmin berhasil diubah", "is_superadmin": user.is_superadmin}
+
+from app.schemas.user import UserCreate
+from app.core.security import get_password_hash
+from pydantic import BaseModel
+
+class PasswordReset(BaseModel):
+    new_password: str
+
+@router.post("/tenants/{tenant_id}/users", response_model=UserAdminPublic, status_code=status.HTTP_201_CREATED)
+def create_tenant_user(
+    tenant_id: UUID,
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Create a new user for a specific tenant (Superadmin only)"""
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id, Tenant.deleted_at.is_(None)).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant tidak ditemukan")
+        
+    hashed_password = get_password_hash(payload.password)
+    new_user = User(
+        nama=payload.nama,
+        email=payload.email,
+        username=payload.username,
+        hashed_password=hashed_password,
+        role=payload.role,
+        is_superadmin=payload.is_superadmin,
+        tenant_id=tenant_id
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+@router.put("/tenants/{tenant_id}/users/{user_id}/password")
+def reset_tenant_user_password(
+    tenant_id: UUID,
+    user_id: int,
+    payload: PasswordReset,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_superadmin),
+):
+    """Reset a user's password (Superadmin only)"""
+    user = db.query(User).filter(User.tenant_id == tenant_id, User.id == user_id, User.is_deleted.is_(False)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Pengguna tidak ditemukan")
+        
+    user.hashed_password = get_password_hash(payload.new_password)
+    db.commit()
+    return {"message": "Password berhasil direset"}
+
 
 @router.post("/licenses/generate", response_model=LicenseGenerateResponse)
 def generate_license(
