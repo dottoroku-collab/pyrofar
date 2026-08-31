@@ -105,6 +105,7 @@ const NAV_STRUCTURE: NavItem[] = [
     label: "ADMIN",
     children: [
       { key: "/users", label: "Pengguna", roles: ["administrator", "pimpinan"] },
+      { key: "/master-data", label: "Master Data", roles: ["administrator"] },
       { key: "/subscription", label: "Langganan", roles: ["administrator", "pimpinan"] },
       { key: "/settings", label: "Pengaturan", roles: ["administrator", "pimpinan"] },
       { key: "/audit-log", label: "Log Audit", roles: ["administrator", "pimpinan"], feature: "audit_log" },

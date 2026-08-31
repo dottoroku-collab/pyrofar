@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { Button, Space, Typography, Tooltip, Badge } from "antd";
 import { AudioOutlined, AudioMutedOutlined, AudioFilled } from "@ant-design/icons";
+import { useLocation } from "react-router-dom";
 import { usePttStore } from "@/store/pttStore";
 import { useLocalParticipant, useParticipants } from "@livekit/components-react";
 
@@ -8,6 +9,7 @@ const { Text } = Typography;
 
 export default function PttWidget() {
   const { isMuted, toggleMute, token } = usePttStore();
+  const location = useLocation();
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
   
@@ -26,7 +28,7 @@ export default function PttWidget() {
     }
   }, [localParticipant]);
 
-  if (!token) return null;
+  if (!token || location.pathname !== "/dashboard") return null;
 
   return (
     <div
