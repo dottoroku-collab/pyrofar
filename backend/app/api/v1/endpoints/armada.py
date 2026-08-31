@@ -166,7 +166,7 @@ def upload_file(
     _get_or_404(db, ctx.tenant_id, armada_id)
     file_url = save_upload(file, subfolder=f"armada/{armada_id}")
     armada_file = ArmadaFile(
-        armada_id=armada_id, jenis_file=jenis_file, file_url=file_url, uploaded_by=current_user.id
+        armada_id=armada_id, jenis_file=jenis_file, file_url=file_url, uploaded_by=current_user.id, tenant_id=ctx.tenant_id
     )
     db.add(armada_file)
     db.commit()
