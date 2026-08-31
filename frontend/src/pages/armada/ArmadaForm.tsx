@@ -119,7 +119,16 @@ export default function ArmadaForm() {
                   </Col>
                   <Col span={12}>
                     <Form.Item name="jenis_kendaraan_id" label="Jenis Kendaraan" rules={[{ required: true }]}>
-                      <Select options={jenisList.map((j) => ({ label: j.nama, value: j.id }))} />
+                      <Select 
+                        options={[
+                          { label: 'Penembak', value: 1 },
+                          { label: 'Tangki', value: 2 },
+                          { label: 'Tangga', value: 3 },
+                          { label: 'Rescue', value: 4 },
+                          { label: 'Dalmas', value: 5 },
+                          { label: 'Lainnya', value: 6 },
+                        ]} 
+                      />
                     </Form.Item>
                   </Col>
                   <Col span={12}>
