@@ -44,6 +44,7 @@ def create_pemeliharaan(db: Session, payload: PemeliharaanCreate, current_user: 
     audit_service.catat(
         db, current_user.id, AuditAksi.input_maintenance, "pemeliharaan", pemeliharaan.id,
         nilai_sesudah={"armada_id": armada.id, "jenis_pekerjaan": pemeliharaan.jenis_pekerjaan},
+        tenant_id=tenant_id,
     )
     return pemeliharaan
 
@@ -82,4 +83,5 @@ def soft_delete(db: Session, pemeliharaan: Pemeliharaan, current_user: User) -> 
     audit_service.catat(
         db, current_user.id, AuditAksi.hapus, "pemeliharaan", pemeliharaan.id,
         nilai_sebelum={"armada_id": pemeliharaan.armada_id},
+        tenant_id=pemeliharaan.tenant_id,
     )

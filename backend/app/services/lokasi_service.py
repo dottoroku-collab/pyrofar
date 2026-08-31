@@ -26,5 +26,6 @@ def pindah_lokasi(
     audit_service.catat(
         db, current_user.id, AuditAksi.pindah_lokasi, "armada", armada.id,
         nilai_sesudah={"lokasi_baru_id": payload.lokasi_baru_id},
+        tenant_id=armada.tenant_id,
     )
     return histori

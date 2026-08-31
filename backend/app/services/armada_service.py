@@ -46,6 +46,7 @@ def create_armada(db: Session, payload: ArmadaCreate, current_user: User, tenant
     audit_service.catat(
         db, current_user.id, AuditAksi.tambah, "armada", armada.id,
         nilai_sesudah={"kode_armada": armada.kode_armada, "status_armada": armada.status_armada.value},
+        tenant_id=tenant_id,
     )
     return armada
 
@@ -65,7 +66,8 @@ def update_armada(db: Session, armada: Armada, payload: ArmadaUpdate, current_us
     db.refresh(armada)
 
     audit_service.catat(
-        db, current_user.id, AuditAksi.edit, "armada", armada.id, nilai_sesudah=data
+        db, current_user.id, AuditAksi.edit, "armada", armada.id, nilai_sesudah=data,
+        tenant_id=armada.tenant_id,
     )
     return armada
 
@@ -89,4 +91,5 @@ def soft_delete_armada(db: Session, armada: Armada, current_user: User) -> None:
     audit_service.catat(
         db, current_user.id, AuditAksi.hapus, "armada", armada.id,
         nilai_sebelum={"kode_armada": armada.kode_armada},
+        tenant_id=armada.tenant_id,
     )
